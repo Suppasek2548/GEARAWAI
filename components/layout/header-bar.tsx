@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import {
   ChevronDown,
   Heart,
@@ -23,7 +23,6 @@ import { LogoutButton } from "@/components/auth/logout-button";
 
 /** `user`: undefined = still loading, null = guest. */
 export function HeaderBar({ user }: { user: HeaderUser | undefined }) {
-  const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -34,8 +33,6 @@ export function HeaderBar({ user }: { user: HeaderUser | undefined }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
-
   return (
     <header
       className={cn(
@@ -43,7 +40,7 @@ export function HeaderBar({ user }: { user: HeaderUser | undefined }) {
         scrolled ? "border-line bg-surface/90 backdrop-blur" : "border-transparent bg-canvas",
       )}
     >
-      <div className="container-page flex h-16 items-center gap-3 lg:h-20 lg:gap-6">
+      <div className="container-page flex h-16 items-center gap-3 lg:h-20 lg:gap-4 xl:gap-6">
         <button
           type="button"
           className="-ml-2 inline-flex size-11 items-center justify-center rounded-btn text-ink hover:bg-elevated lg:hidden"
@@ -56,27 +53,10 @@ export function HeaderBar({ user }: { user: HeaderUser | undefined }) {
 
         <Logo className="shrink-0" />
 
-        <nav aria-label="เมนูหลัก" className="hidden lg:block">
-          <ul className="flex items-center gap-1 desk:gap-2">
-            {MAIN_NAV.map((item) =>
-              item.href === "/categories" ? (
-                <li key={item.href}>
-                  <CategoriesMenu active={isActive(item.href)} />
-                </li>
-              ) : (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    aria-current={isActive(item.href) ? "page" : undefined}
-                    className={navLinkClass(isActive(item.href))}
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ),
-            )}
-          </ul>
-        </nav>
+        {/* The active-link highlight needs the URL, which is only known at request time */}
+        <Suspense fallback={<MainNav pathname={null} />}>
+          <ActiveMainNav />
+        </Suspense>
 
         <div className="ml-auto flex items-center gap-1 md:gap-2">
           <SearchForm className="hidden lg:flex" />
@@ -107,15 +87,49 @@ export function HeaderBar({ user }: { user: HeaderUser | undefined }) {
         <SearchForm className="flex w-full" />
       </div>
 
-      <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} user={user} pathname={pathname} />
+      <Suspense fallback={null}>
+        <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} user={user} />
+      </Suspense>
     </header>
+  );
+}
+
+function ActiveMainNav() {
+  return <MainNav pathname={usePathname()} />;
+}
+
+function MainNav({ pathname }: { pathname: string | null }) {
+  const isActive = (href: string) =>
+    pathname !== null && (href === "/" ? pathname === "/" : pathname.startsWith(href));
+  return (
+    <nav aria-label="เมนูหลัก" className="hidden lg:block">
+      <ul className="flex items-center gap-1 desk:gap-2">
+        {MAIN_NAV.map((item) =>
+          item.href === "/categories" ? (
+            <li key={item.href}>
+              <CategoriesMenu active={isActive(item.href)} />
+            </li>
+          ) : (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                aria-current={isActive(item.href) ? "page" : undefined}
+                className={navLinkClass(isActive(item.href))}
+              >
+                {item.label}
+              </Link>
+            </li>
+          ),
+        )}
+      </ul>
+    </nav>
   );
 }
 
 function navLinkClass(active: boolean) {
   return cn(
-    "relative inline-flex h-10 items-center px-3 text-sm font-medium transition-colors",
-    "after:absolute after:inset-x-3 after:bottom-1 after:h-0.5 after:rounded-full after:transition-colors",
+    "relative inline-flex h-10 items-center px-2 xl:px-3 text-sm font-medium transition-colors",
+    "after:absolute after:inset-x-2 xl:after:inset-x-3 after:bottom-1 after:h-0.5 after:rounded-full after:transition-colors",
     active ? "text-ink after:bg-brand-lime" : "text-ink-soft hover:text-ink after:bg-transparent",
   );
 }
@@ -132,7 +146,7 @@ function SearchForm({ className }: { className?: string }) {
         name="q"
         type="search"
         placeholder="Search products, brands..."
-        className="h-11 w-full rounded-btn border border-line bg-surface pr-3 pl-10 text-sm text-ink placeholder:text-ink-muted focus-visible:border-brand-lime lg:w-56 desk:w-[400px]"
+        className="h-11 w-full rounded-btn border border-line bg-surface pr-3 pl-10 text-sm text-ink placeholder:text-ink-muted focus-visible:border-brand-lime lg:w-44 xl:w-56 desk:w-[400px]"
       />
     </form>
   );

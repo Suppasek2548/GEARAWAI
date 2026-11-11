@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { ChevronDown, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
@@ -17,13 +18,12 @@ export function MobileDrawer({
   open,
   onClose,
   user,
-  pathname,
 }: {
   open: boolean;
   onClose: () => void;
   user: HeaderUser | undefined;
-  pathname: string;
 }) {
+  const pathname = usePathname();
   const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {

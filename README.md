@@ -13,8 +13,8 @@ Next.js 16 (App Router, Cache Components, `proxy.ts`) · React 19 · TypeScript 
 
 | Phase | ขอบเขต | สถานะ |
 |---|---|---|
-| 1 Foundation | Design System, Supabase clients, Migration + Storage + Seed, Register/Login/Logout, Guard `/dashboard` `/admin` | ✅ โค้ดเสร็จ · ⏳ รอเชื่อม Supabase Project จริง |
-| 2 Main Frontend | Homepage, About, Catalog, Search & Filter, Contact | ⏳ |
+| 1 Foundation | Design System, Supabase clients, Migration + Storage + Seed, Register/Login/Logout, Guard `/dashboard` `/admin` | ✅ เสร็จ (เชื่อม Supabase จริงแล้ว) |
+| 2 Main Frontend | Homepage, About, Catalog (`/shop`, `/shop/[slug]`, `/categories`), Search & Filter, Deals, Contact + Contact Form | ✅ เสร็จ (ปุ่ม Cart/Wishlist ทำงานจริงใน Phase 3) |
 | 3 Shopping | Wishlist, Cart, Booking, Checkout/Payment (Demo) | ⏳ |
 | 4 Member | Dashboard, Points, Birthday, Rewards | ⏳ |
 | 5 Admin | 18 เมนู Admin, Images, Promotions, Reports | ⏳ |

@@ -1,12 +1,14 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { Mail, Phone } from "lucide-react";
+import { getPublicSettings } from "@/lib/data/site";
+import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { SocialIcons } from "@/components/shared/social-icons";
+import { Skeleton } from "@/components/ui/misc";
 import { Logo } from "./logo";
 import { CATEGORY_LINKS } from "./nav-items";
 
-/**
- * Global footer (UI §2.3). Contact values are the approved SAMPLE values from site_settings.store_contact
- * (M07) — Phase 2 will read them from the database so Admin edits show up here.
- */
+/** Global footer (UI §2.3). Contact column reads site_settings.store_contact / social_links (S13). */
 export function Footer() {
   const heading = "mb-3 font-display text-sm font-semibold tracking-wider text-ink uppercase";
   const link = "text-sm text-ink-soft hover:text-ink";
@@ -66,19 +68,9 @@ export function Footer() {
 
         <div>
           <h2 className={heading}>Contact</h2>
-          <ul className="grid gap-2">
-            <li>
-              <a href="tel:0000000000" className={`${link} inline-flex items-center gap-2`}>
-                <Phone className="size-4" aria-hidden /> 000-000-0000
-              </a>
-            </li>
-            <li>
-              <a href="mailto:contact@example.com" className={`${link} inline-flex items-center gap-2`}>
-                <Mail className="size-4" aria-hidden /> contact@example.com
-              </a>
-            </li>
-            <li className="text-xs text-ink-muted">ⓘ ข้อมูลติดต่อเป็นข้อมูลตัวอย่าง</li>
-          </ul>
+          <Suspense fallback={<Skeleton className="h-16 w-48" />}>
+            <FooterContact />
+          </Suspense>
         </div>
       </div>
 
@@ -89,5 +81,33 @@ export function Footer() {
         </div>
       </div>
     </footer>
+  );
+}
+
+async function FooterContact() {
+  if (!hasSupabaseEnv()) return null;
+  const { store_contact: c, social_links } = await getPublicSettings();
+  const link = "inline-flex items-center gap-2 text-sm text-ink-soft hover:text-ink";
+  return (
+    <div className="flex flex-col gap-3">
+      <ul className="grid gap-2">
+        {c.phone && (
+          <li>
+            <a href={`tel:${c.phone.replace(/[^0-9+]/g, "")}`} className={link}>
+              <Phone className="size-4" aria-hidden /> {c.phone}
+            </a>
+          </li>
+        )}
+        {c.email && (
+          <li>
+            <a href={`mailto:${c.email}`} className={`${link} break-all`}>
+              <Mail className="size-4 shrink-0" aria-hidden /> {c.email}
+            </a>
+          </li>
+        )}
+        {c.is_sample && <li className="text-xs text-ink-muted">ⓘ ข้อมูลติดต่อเป็นข้อมูลตัวอย่าง</li>}
+      </ul>
+      <SocialIcons links={social_links} />
+    </div>
   );
 }
