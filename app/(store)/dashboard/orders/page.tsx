@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "My Orders" };
 /** S14-F03/F04 — order history (own rows only, RLS). */
 export default function MyOrdersPage() {
   return (
-    <div className="container-page flex flex-col gap-6 py-8 md:py-10">
+    <div className="flex flex-col gap-6">
       <Breadcrumb items={[{ label: "Dashboard", href: "/dashboard" }, { label: "My Orders" }]} />
       <h1 className="font-display text-3xl font-bold">My Orders</h1>
       <Suspense fallback={<Skeleton className="h-64" />}>

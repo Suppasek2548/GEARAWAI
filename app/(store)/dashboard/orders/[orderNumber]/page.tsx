@@ -19,7 +19,7 @@ const METHOD = { promptpay_demo: "PromptPay (Demo)", bank_transfer_demo: "โอ
 /** S14-F04 + S14-F10 — order detail, timeline, payments; pay / cancel while pending_payment. */
 export default function OrderDetailPage({ params }: PageProps<"/dashboard/orders/[orderNumber]">) {
   return (
-    <div className="container-page flex flex-col gap-6 py-8 md:py-10">
+    <div className="flex flex-col gap-6">
       <Suspense fallback={<Skeleton className="h-[480px]" />}>
         <OrderDetail params={params} />
       </Suspense>

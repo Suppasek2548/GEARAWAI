@@ -6,7 +6,15 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { logoutAction } from "@/lib/actions/auth";
 
 /** Logout with a confirmation dialog (UI §11.2 / §15). */
-export function LogoutButton({ className, label = "ออกจากระบบ" }: { className?: string; label?: string }) {
+export function LogoutButton({
+  className,
+  label = "ออกจากระบบ",
+  labelClassName,
+}: {
+  className?: string;
+  label?: string;
+  labelClassName?: string;
+}) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
@@ -14,7 +22,7 @@ export function LogoutButton({ className, label = "ออกจากระบ�
     <>
       <button type="button" className={className} onClick={() => setOpen(true)}>
         <LogOut className="size-4" aria-hidden />
-        {label}
+        <span className={labelClassName}>{label}</span>
       </button>
       <ConfirmDialog
         open={open}

@@ -13,6 +13,8 @@ export type CurrentUser = {
   accountStatus: "active" | "suspended";
   avatarUrl: string | null;
   pointsBalance: number;
+  birthDate: string | null;
+  createdAt: string;
 };
 
 /**
@@ -31,7 +33,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   // RLS: a member can only read their own profile row
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, email, role, account_status, avatar_url, points_balance")
+    .select("full_name, email, role, account_status, avatar_url, points_balance, birth_date, created_at")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -45,6 +47,8 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     accountStatus: profile.account_status as CurrentUser["accountStatus"],
     avatarUrl: profile.avatar_url,
     pointsBalance: profile.points_balance,
+    birthDate: profile.birth_date,
+    createdAt: profile.created_at,
   };
 });
 

@@ -27,7 +27,7 @@ export function CheckoutForm({ lines, subtotal, shipping, profile }: Props) {
   const [coupon, setCoupon] = useState<{ code: string; discount: number } | null>(null);
   const [couponMsg, setCouponMsg] = useState<string | null>(null);
   const [checking, startCheck] = useTransition();
-  const [address, setAddress] = useState(state.values?.shippingAddress ?? "");
+  const [address, setAddress] = useState(state.values?.shippingAddress ?? profile.address ?? "");
   const fe = state.fieldErrors ?? {};
   const v = state.values;
 

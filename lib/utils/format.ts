@@ -4,17 +4,24 @@
  */
 export const TH_TIME_ZONE = "Asia/Bangkok";
 
-const thbFormatter = new Intl.NumberFormat("th-TH", {
+// Whole baht → "฿4,990"; with satang → always 2 decimals "฿314.10"
+const thbWhole = new Intl.NumberFormat("th-TH", {
   style: "currency",
   currency: "THB",
-  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+});
+const thbCents = new Intl.NumberFormat("th-TH", {
+  style: "currency",
+  currency: "THB",
+  minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
 
 export function formatTHB(value: number | string | null | undefined): string {
   const n = typeof value === "string" ? Number(value) : value;
   if (n === null || n === undefined || Number.isNaN(n)) return "-";
-  return thbFormatter.format(n);
+  const rounded = Math.round(n * 100) / 100;
+  return Number.isInteger(rounded) ? thbWhole.format(rounded) : thbCents.format(rounded);
 }
 
 export function formatThaiDate(

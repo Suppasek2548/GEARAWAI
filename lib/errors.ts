@@ -44,6 +44,7 @@ const MESSAGES: Record<string, string> = {
   SERVICE_UNAVAILABLE: "บริการนี้ปิดให้จองชั่วคราว",
   PAYMENT_NOT_FOUND: "ไม่พบรายการแจ้งชำระ",
   INVALID_PAYMENT_STATUS: "รายการแจ้งชำระนี้ถูกตรวจสอบไปแล้ว",
+  BIRTHDAY_COUPON_UNAVAILABLE: "สิทธิพิเศษวันเกิดปิดให้บริการชั่วคราว",
 };
 
 export const GENERIC_ERROR = "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง";

@@ -20,7 +20,7 @@ const STATUS = {
 /** S08-F07 / S14-F07 — own bookings; cancel while pending. */
 export default function MyBookingsPage() {
   return (
-    <div className="container-page flex flex-col gap-6 py-8 md:py-10">
+    <div className="flex flex-col gap-6">
       <Breadcrumb items={[{ label: "Dashboard", href: "/dashboard" }, { label: "My Bookings" }]} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-3xl font-bold">My Bookings</h1>
