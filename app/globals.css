@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+/*
+ * GEARAWAI Design Tokens — docs/GEARAWAI_UI_UX_DESIGN.md §1
+ * Tailwind v4: tokens live in @theme (the doc's tailwind.config.ts example was written for v3).
+ * Brand colors come from SPEC; values marked (เสนอ) in UI §1.1 are the proposed dark palette.
+ */
+@theme {
+  /* Brand (SPEC) */
+  --color-brand-primary: #1f06ac;
+  --color-brand-secondary: #0f42c0;
+  --color-brand-accent: #5882e8;
+  --color-brand-lime: #e3ef4f;
+
+  /* Surfaces (proposed — UI §1.1) */
+  --color-canvas: #0a0b1e;
+  --color-surface: #12143a;
+  --color-elevated: #1a1d4d;
+  --color-line: #2a2f6b;
+
+  /* Text */
+  --color-ink: #ffffff;
+  --color-ink-soft: #c9cde8;
+  --color-ink-muted: #8b93c9;
+
+  /* Status */
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-danger: #f87171;
+
+  /* Typography (M17 proposal) — variables set by next/font in app/layout.tsx */
+  --font-sans: var(--font-plex-thai), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-chakra), var(--font-plex-thai), ui-sans-serif, sans-serif;
+
+  /* Breakpoints — SPEC §7: Mobile <768 · Tablet md 768 · Laptop lg 1024 · Desktop desk 1440 */
+  --breakpoint-desk: 90rem;
+
+  /* Radius */
+  --radius-card: 12px;
+  --radius-btn: 8px;
+
+  /* Effects */
+  --shadow-glow: 0 0 0 1px #5882e8, 0 0 16px rgb(88 130 232 / 0.35);
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Visible lime focus ring everywhere (UI §16.2) */
+  :focus-visible {
+    outline: 2px solid var(--color-brand-lime);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--color-brand-accent);
+    color: var(--color-ink);
+  }
+}
+
+@utility bg-brand-gradient {
+  background-image: linear-gradient(135deg, #1f06ac 0%, #0f42c0 55%, #5882e8 100%);
+}
+
+/* Page container — max 1440px, gutter 16 / 32 / 48 px (UI §1.4) */
+@utility container-page {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 1440px;
+  padding-inline: 1rem;
+  @media (width >= 48rem) {
+    padding-inline: 2rem;
+  }
+  @media (width >= 90rem) {
+    padding-inline: 3rem;
+  }
+}
+
+/* Respect reduced motion: disable glow animation + hover lift (UI §16.7) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
