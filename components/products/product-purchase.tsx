@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Minus, Plus } from "lucide-react";
-import { AddToCartButton, WishlistButton } from "./product-actions";
+import { AddToCartButton, BuyNowButton, WishlistButton } from "./product-actions";
 import { formatTHB } from "@/lib/utils/format";
 
 /**
@@ -65,6 +65,12 @@ export function ProductPurchase({
         />
         <WishlistButton productId={productId} className="size-12" />
       </div>
+      <BuyNowButton
+        productId={productId}
+        inStock={inStock}
+        quantity={qty}
+        className="hidden w-full md:inline-flex"
+      />
 
       {/* Mobile sticky bottom bar */}
       <div className="fixed inset-x-0 bottom-0 z-30 flex items-center gap-3 border-t border-line bg-surface/95 px-4 py-3 backdrop-blur md:hidden">

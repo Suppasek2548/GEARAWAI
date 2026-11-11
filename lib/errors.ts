@@ -37,6 +37,13 @@ const MESSAGES: Record<string, string> = {
   FORBIDDEN: "คุณไม่มีสิทธิ์ทำรายการนี้",
   CANNOT_CHANGE_SELF: "ไม่สามารถเปลี่ยนสถานะบัญชีของตนเองได้",
   LAST_ADMIN: "ไม่สามารถระงับผู้ดูแลระบบคนสุดท้ายได้",
+  COUPON_NO_CODE: "กรุณากรอกรหัสคูปอง",
+  ORDER_NOT_FOUND: "ไม่พบคำสั่งซื้อ",
+  INVALID_SLIP_PATH: "ไฟล์สลิปไม่ถูกต้อง กรุณาอัปโหลดใหม่",
+  REASON_REQUIRED: "กรุณาระบุเหตุผล",
+  SERVICE_UNAVAILABLE: "บริการนี้ปิดให้จองชั่วคราว",
+  PAYMENT_NOT_FOUND: "ไม่พบรายการแจ้งชำระ",
+  INVALID_PAYMENT_STATUS: "รายการแจ้งชำระนี้ถูกตรวจสอบไปแล้ว",
 };
 
 export const GENERIC_ERROR = "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง";

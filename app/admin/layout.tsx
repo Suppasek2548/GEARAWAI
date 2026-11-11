@@ -8,6 +8,8 @@ import { Logo } from "@/components/layout/logo";
 import { Skeleton } from "@/components/ui/misc";
 import { ForbiddenView } from "@/components/auth/forbidden-view";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { AdminNav } from "@/components/admin/admin-nav";
+import { adminPendingCounts } from "@/lib/data/admin";
 
 export const metadata: Metadata = {
   title: { default: "Admin", template: "%s | GEARAWAI Admin" },
@@ -59,9 +61,14 @@ async function AdminGate({ children }: { children: React.ReactNode }) {
           <LogoutButton className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-btn px-3 text-sm text-ink-soft hover:bg-elevated hover:text-ink" />
         </div>
       </header>
-      <main id="main" className="flex flex-1 flex-col">
-        {children}
-      </main>
+      <div className="flex flex-1 flex-col md:flex-row">
+        <aside className="border-b border-line bg-surface p-3 md:w-60 md:shrink-0 md:border-r md:border-b-0">
+          <AdminNav counts={{ payments: (await adminPendingCounts()).submittedPayments }} />
+        </aside>
+        <main id="main" className="flex min-w-0 flex-1 flex-col">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

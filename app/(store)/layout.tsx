@@ -1,10 +1,11 @@
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { WishlistProvider } from "@/components/products/wishlist-context";
 
 /** Storefront + member area: shared Header/Footer on every page (SPEC §8). */
 export default function StoreLayout({ children }: LayoutProps<"/">) {
   return (
-    <>
+    <WishlistProvider>
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-btn focus:bg-brand-lime focus:px-4 focus:py-2 focus:text-canvas"
@@ -16,6 +17,6 @@ export default function StoreLayout({ children }: LayoutProps<"/">) {
         {children}
       </main>
       <Footer />
-    </>
+    </WishlistProvider>
   );
 }
