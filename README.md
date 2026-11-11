@@ -11,14 +11,14 @@ Next.js 16 (App Router, Cache Components, `proxy.ts`) · React 19 · TypeScript 
 
 ## สถานะการพัฒนา
 
-| Phase | ขอบเขต | สถานะ |
-|---|---|---|
-| 1 Foundation | Design System, Supabase clients, Migration + Storage + Seed, Register/Login/Logout, Guard `/dashboard` `/admin` | ✅ เสร็จ (เชื่อม Supabase จริงแล้ว) |
-| 2 Main Frontend | Homepage, About, Catalog (`/shop`, `/shop/[slug]`, `/categories`), Search & Filter, Deals, Contact + Contact Form | ✅ เสร็จ |
-| 3 Shopping | Wishlist, Cart, Booking, Checkout/Payment (Demo), หน้าคำสั่งซื้อ/การจองของสมาชิก, Admin Orders + Payments (พื้นฐาน) | ✅ เสร็จ |
-| 4 Member | Dashboard (sidebar, overview, profile + avatar + birth date), Points, Birthday coupon, Rewards — R-32 = ยอมรับความเสี่ยง (docs/DECISIONS.md) | ✅ เสร็จ |
-| 5 Admin | 18 เมนู Admin, Images, Promotions, Reports | ⏳ |
-| 6 Integration & Testing | TC ทั้งหมด, Responsive, คู่มือ | ⏳ |
+| Phase                   | ขอบเขต                                                                                                                                                                                                      | สถานะ                          |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| 1 Foundation            | Design System, Supabase clients, Migration + Storage + Seed, Register/Login/Logout, Guard `/dashboard` `/admin`                                                                                             | ✅ เสร็จ (เชื่อม Supabase จริงแล้ว) |
+| 2 Main Frontend         | Homepage, About, Catalog (`/shop`, `/shop/[slug]`, `/categories`), Search & Filter, Deals, Contact + Contact Form                                                                                           | ✅ เสร็จ                        |
+| 3 Shopping              | Wishlist, Cart, Booking, Checkout/Payment (Demo), หน้าคำสั่งซื้อ/การจองของสมาชิก, Admin Orders + Payments (พื้นฐาน)                                                                                                 | ✅ เสร็จ                        |
+| 4 Member                | Dashboard (sidebar, overview, profile + avatar + birth date), Points, Birthday coupon, Rewards — R-32 = ยอมรับความเสี่ยง (docs/DECISIONS.md)                                                                   | ✅ เสร็จ                        |
+| 5 Admin                 | Dashboard Overview, 18 เมนู Admin (Catalog, Stock, Images, Orders/Payments, Customers/Points/Rewards, Promotions/Coupons, Services/Bookings, Messages, Settings), Reports + Excel + Print-to-PDF — D-14–D-16 | ✅ เสร็จ                        |
+| 6 Integration & Testing | TC ทั้งหมด, Responsive, คู่มือ                                                                                                                                                                                   | ⏳                             |
 
 ## ติดตั้ง
 
@@ -28,17 +28,17 @@ cp .env.example .env.local   # แล้วใส่ URL + anon/publishable key 
 npm run dev                  # http://localhost:3000
 ```
 
-| Script | หน้าที่ |
-|---|---|
-| `npm run dev` / `build` / `start` | รัน / Build / Production |
-| `npm run lint` | ESLint |
-| `npm run format` | Prettier (+ เรียง class Tailwind) |
-| `npm run db:types` | สร้าง `types/database.types.ts` จาก Supabase ที่ link แล้ว |
+| Script                            | หน้าที่                                                   |
+| --------------------------------- | ------------------------------------------------------ |
+| `npm run dev` / `build` / `start` | รัน / Build / Production                                |
+| `npm run lint`                    | ESLint                                                 |
+| `npm run format`                  | Prettier (+ เรียง class Tailwind)                       |
+| `npm run db:types`                | สร้าง `types/database.types.ts` จาก Supabase ที่ link แล้ว |
 
 ## ตั้งค่า Supabase (Project ใหม่ — ห้ามใช้ Project เดิม)
 
 1. สร้าง Project ใหม่ใน Supabase (Region: Southeast Asia / Singapore) — เก็บ Database Password ไว้เอง
-2. **Authentication → Sign In / Providers → Email:** ปิด *Confirm email* (D-02) และตั้ง *Minimum password length* = 8
+2. **Authentication → Sign In / Providers → Email:** ปิด _Confirm email_ (D-02) และตั้ง _Minimum password length_ = 8
 3. **Authentication → URL Configuration:** Site URL = `http://localhost:3000`
 4. **Project Settings → API:** คัดลอก Project URL และ anon (หรือ publishable) key ใส่ `.env.local`
    — **ห้ามใช้ service_role / secret key ในแอปนี้**

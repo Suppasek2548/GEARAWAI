@@ -96,3 +96,28 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Print-friendly reports (D-09): a light token scope + white page so "Save as PDF" is readable on paper. */
+.print-sheet {
+  --color-canvas: #ffffff;
+  --color-surface: #ffffff;
+  --color-elevated: #f2f3f8;
+  --color-line: #d5d8e6;
+  --color-ink: #0b0b1e;
+  --color-ink-soft: #3a3f63;
+  --color-ink-muted: #5d6390;
+  --color-warning: #8a5a00;
+  --color-danger: #b42318;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+}
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+  html,
+  body {
+    background: #ffffff !important;
+  }
+}

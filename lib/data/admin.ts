@@ -62,11 +62,24 @@ export async function slipSignedUrl(path: string | null) {
   return data?.signedUrl ?? null;
 }
 
+/** Sidebar badges (ADMIN §2): submitted payments, pending bookings, new messages, low stock, redemptions to hand over. */
 export async function adminPendingCounts() {
   const supabase = await createClient();
-  const [payments, orders] = await Promise.all([
+  const [payments, bookings, messages, products, redemptions] = await Promise.all([
     supabase.from("payments").select("id", { count: "exact", head: true }).eq("status", "submitted"),
-    supabase.from("orders").select("id", { count: "exact", head: true }).eq("status", "paid"),
+    supabase.from("bookings").select("id", { count: "exact", head: true }).eq("status", "pending"),
+    supabase.from("contact_messages").select("id", { count: "exact", head: true }).eq("status", "new"),
+    supabase.from("products").select("stock_quantity, low_stock_threshold").eq("status", "active"),
+    supabase
+      .from("reward_redemptions")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "requested"),
   ]);
-  return { submittedPayments: payments.count ?? 0, toShip: orders.count ?? 0 };
+  return {
+    payments: payments.count ?? 0,
+    bookings: bookings.count ?? 0,
+    messages: messages.count ?? 0,
+    lowStock: (products.data ?? []).filter((p) => p.stock_quantity <= p.low_stock_threshold).length,
+    redemptions: redemptions.count ?? 0,
+  };
 }

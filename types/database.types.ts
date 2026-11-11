@@ -1707,7 +1707,12 @@ export type Database = {
       }
       redeem_reward: { Args: { p_reward_id: string }; Returns: string }
       report_best_sellers: {
-        Args: { p_from: string; p_limit?: number; p_to: string }
+        Args: {
+          p_from: string
+          p_include_demo?: boolean
+          p_limit?: number
+          p_to: string
+        }
         Returns: {
           name: string
           product_id: string
@@ -1717,7 +1722,7 @@ export type Database = {
         }[]
       }
       report_category_sales: {
-        Args: { p_from: string; p_to: string }
+        Args: { p_from: string; p_include_demo?: boolean; p_to: string }
         Returns: {
           category_id: string
           category_name: string
@@ -1726,7 +1731,12 @@ export type Database = {
         }[]
       }
       report_customers: {
-        Args: { p_from: string; p_limit?: number; p_to: string }
+        Args: {
+          p_from: string
+          p_include_demo?: boolean
+          p_limit?: number
+          p_to: string
+        }
         Returns: {
           email: string
           full_name: string
@@ -1736,14 +1746,19 @@ export type Database = {
         }[]
       }
       report_order_status: {
-        Args: { p_from: string; p_to: string }
+        Args: { p_from: string; p_include_demo?: boolean; p_to: string }
         Returns: {
           order_count: number
           status: Database["public"]["Enums"]["order_status"]
         }[]
       }
       report_sales: {
-        Args: { p_from: string; p_group?: string; p_to: string }
+        Args: {
+          p_from: string
+          p_group?: string
+          p_include_demo?: boolean
+          p_to: string
+        }
         Returns: {
           order_count: number
           period: string

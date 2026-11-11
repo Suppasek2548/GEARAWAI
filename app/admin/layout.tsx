@@ -44,7 +44,7 @@ async function AdminGate({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-line bg-surface px-4 md:px-6">
+      <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-line bg-surface px-4 md:px-6 print:hidden">
         <Logo href="/admin" />
         <span className="hidden rounded-full bg-brand-primary px-2.5 py-0.5 text-xs font-semibold sm:inline">
           Admin
@@ -62,8 +62,8 @@ async function AdminGate({ children }: { children: React.ReactNode }) {
         </div>
       </header>
       <div className="flex flex-1 flex-col md:flex-row">
-        <aside className="border-b border-line bg-surface p-3 md:w-60 md:shrink-0 md:border-r md:border-b-0">
-          <AdminNav counts={{ payments: (await adminPendingCounts()).submittedPayments }} />
+        <aside className="border-b border-line bg-surface p-3 md:w-[72px] md:shrink-0 md:border-r md:border-b-0 lg:w-60 print:hidden">
+          <AdminNav counts={await adminPendingCounts()} />
         </aside>
         <main id="main" className="flex min-w-0 flex-1 flex-col">
           {children}
