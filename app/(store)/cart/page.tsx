@@ -6,6 +6,7 @@ import { getMyCart } from "@/lib/data/member";
 import { getPublicSettings } from "@/lib/data/site";
 import { formatTHB } from "@/lib/utils/format";
 import { CartRow } from "@/components/cart/cart-row";
+import { PendingPaymentReminder } from "@/components/orders/pending-payment-reminder";
 import { ButtonLink } from "@/components/ui/button";
 import { EmptyState, Skeleton } from "@/components/ui/misc";
 
@@ -15,6 +16,8 @@ export const metadata: Metadata = { title: "Shopping Cart" };
 export default function CartPage() {
   return (
     <div className="container-page flex flex-col gap-6 py-8 pb-28 md:py-10 lg:pb-10">
+      {/* the cart is emptied when an order is placed — point back to orders still waiting for payment */}
+      <PendingPaymentReminder />
       <Suspense fallback={<CartSkeleton />}>
         <CartContent />
       </Suspense>

@@ -52,12 +52,27 @@ async function Editor({ params }: { params: PageProps<"/admin/promotions/[id]">[
   const isNew = id === "new";
   if (!isNew && !UUID_RE.test(id)) notFound();
   const supabase = await createClient();
-  const [promo, { data: products }] = await Promise.all([
+  const [promo, { data: products }, { data: elsewhere }] = await Promise.all([
     isNew
       ? Promise.resolve({ data: null })
       : supabase.from("promotions").select("*, promotion_products(product_id)").eq("id", id).maybeSingle(),
-    supabase.from("products").select("id, name, sku, price, sale_price, categories(name)").order("name"),
+    supabase
+      .from("products")
+      .select(
+        "id, name, sku, price, sale_price, status, created_at, categories(name), brands(name), product_images(image_url, is_primary)",
+      )
+      .order("name"),
+    // which OTHER promotions each product is already in (the storefront charges the lowest price)
+    isNew
+      ? Promise.resolve({ data: [] })
+      : supabase.from("promotion_products").select("product_id, promotions(name)").neq("promotion_id", id),
   ]);
+  const otherPromos = new Map<string, string[]>();
+  for (const row of elsewhere ?? []) {
+    const name = row.promotions?.name;
+    if (!name) continue;
+    otherPromos.set(row.product_id, [...(otherPromos.get(row.product_id) ?? []), name]);
+  }
   if (!isNew && !promo.data) notFound();
   const p = promo.data;
   const defaults = p
@@ -86,6 +101,12 @@ async function Editor({ params }: { params: PageProps<"/admin/promotions/[id]">[
             price: Number(x.price),
             sale_price: x.sale_price === null ? null : Number(x.sale_price),
             category: x.categories?.name ?? "",
+            brand: x.brands?.name ?? "",
+            active: x.status === "active",
+            createdAt: x.created_at,
+            image:
+              x.product_images.find((i) => i.is_primary)?.image_url ?? x.product_images[0]?.image_url ?? null,
+            otherPromotions: otherPromos.get(x.id) ?? [],
           }))}
         />
       )}

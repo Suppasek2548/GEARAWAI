@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { getCurrentUser, isActiveAdmin } from "@/lib/auth/dal";
 import { getMyOrderByNumber, type OrderStatus } from "@/lib/data/member";
 import { getPublicSettings } from "@/lib/data/site";
 import { formatTHB, formatThaiDateTime } from "@/lib/utils/format";
 import { CheckoutStepper } from "@/components/checkout/stepper";
 import { PaymentForm } from "@/components/checkout/payment-form";
 import { OrderStatusBadge } from "@/components/orders/status-badge";
+import { OtherOwnerNotice } from "@/components/orders/other-owner-notice";
 import { ButtonLink } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/misc";
 import { PaymentDemoBanner } from "@/components/checkout/payment-demo-banner";
@@ -41,7 +42,12 @@ async function PaymentContent({
     getCurrentUser(),
     getPublicSettings(),
   ]);
-  if (!order || !user || order.user_id !== user.id) notFound();
+  if (!order || !user) notFound();
+  if (order.user_id !== user.id) {
+    // Admins can read every order through RLS: explain instead of a confusing 404 (members still get 404)
+    if (isActiveAdmin(user)) return <OtherOwnerNotice orderId={order.id} orderNumber={order.order_number} />;
+    notFound();
+  }
 
   const status = order.status as OrderStatus;
   const lastRejected = [...(order.payments ?? [])]

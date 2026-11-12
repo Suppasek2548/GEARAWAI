@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { AlertTriangle, CreditCard } from "lucide-react";
 import { adminListPayments, slipSignedUrl } from "@/lib/data/admin";
+import { createClient } from "@/lib/supabase/server";
 import type { PaymentStatus } from "@/lib/data/member";
 import { formatTHB, formatThaiDateTime } from "@/lib/utils/format";
 import { PaymentStatusBadge } from "@/components/orders/status-badge";
@@ -50,7 +51,12 @@ async function PaymentsTable({
   const raw = typeof sp.status === "string" ? sp.status : "submitted";
   const status =
     raw === "all" ? null : STATUSES.includes(raw as PaymentStatus) ? (raw as PaymentStatus) : "submitted";
-  const payments = await adminListPayments(status);
+  const supabase = await createClient();
+  const [payments, { count: awaiting }] = await Promise.all([
+    adminListPayments(status),
+    // orders not paid yet have no payment row until the customer presses "ยืนยันการแจ้งชำระ"
+    supabase.from("orders").select("id", { count: "exact", head: true }).eq("status", "pending_payment"),
+  ]);
   const slips = await Promise.all(payments.map((p) => slipSignedUrl(p.slip_path)));
 
   return (
@@ -75,6 +81,16 @@ async function PaymentsTable({
           );
         })}
       </nav>
+
+      {(awaiting ?? 0) > 0 && (
+        <p className="rounded-btn border border-line bg-surface p-3 text-sm text-ink-soft">
+          มีคำสั่งซื้อที่ลูกค้ายังไม่แจ้งชำระ <strong className="text-ink">{awaiting}</strong> รายการ —
+          จะยังไม่แสดงในหน้านี้จนกว่าลูกค้ากด &quot;ยืนยันการแจ้งชำระ&quot; ·{" "}
+          <Link href="/admin/orders?status=pending_payment" className="text-brand-accent hover:underline">
+            ดูที่ Orders → รอชำระเงิน
+          </Link>
+        </p>
+      )}
 
       {payments.length === 0 ? (
         <EmptyState icon={CreditCard} title="ไม่มีรายการ" />

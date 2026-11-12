@@ -38,7 +38,7 @@ export default function AboutPage() {
       </Suspense>
       <section className="container-page py-12 md:py-16">
         <div className="flex flex-col items-center gap-4 rounded-card bg-brand-gradient p-8 text-center md:p-12">
-          <h2 className="font-display text-2xl font-bold md:text-3xl">พร้อมอัปเกรดเกียร์ของคุณแล้วหรือยัง?</h2>
+          <h2 className="font-display text-2xl font-bold md:text-3xl">Ready to Level Up Your Gear?</h2>
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
             <ButtonLink href="/shop" size="lg">
               SHOP NOW

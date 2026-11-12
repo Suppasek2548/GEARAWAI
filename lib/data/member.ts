@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/auth/dal";
 
 /* Member-scoped reads — every query runs as the signed-in user, so RLS / RPC limit rows to their own (S14). */
 
@@ -87,17 +88,42 @@ export type OrderStatus =
   "pending_payment" | "payment_submitted" | "paid" | "shipped" | "completed" | "cancelled";
 export type PaymentStatus = "pending" | "submitted" | "verified" | "rejected" | "voided";
 
+/**
+ * The signed-in user's OWN orders. RLS (`orders_read`) also lets an admin read every order, so the
+ * explicit user_id filter keeps an admin's personal dashboard from listing other customers' orders.
+ */
 export async function getMyOrders() {
+  const user = await getCurrentUser();
+  if (!user) return [];
   const supabase = await createClient();
   const { data } = await supabase
     .from("orders")
     .select(
       "id, order_number, status, total_amount, created_at, order_items(product_name, product_image_url, quantity), payments(status, created_at)",
     )
+    .eq("user_id", user.id)
     .order("created_at", { ascending: false });
   return data ?? [];
 }
 
+/** Own orders still waiting for payment — drives the "ชำระเงินต่อ" reminder on the cart and dashboard. */
+export async function getMyPendingPaymentOrders() {
+  const user = await getCurrentUser();
+  if (!user) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("orders")
+    .select("order_number, total_amount, created_at")
+    .eq("user_id", user.id)
+    .eq("status", "pending_payment")
+    .order("created_at", { ascending: false });
+  return data ?? [];
+}
+
+/**
+ * One order by number, readable by its owner (or an admin, through RLS). Pages must still compare
+ * `user_id` with the current user — see the payment and order-detail pages.
+ */
 export async function getMyOrderByNumber(orderNumber: string) {
   if (!/^GA-\d{8}-\d{4,}$/.test(orderNumber)) return null;
   const supabase = await createClient();

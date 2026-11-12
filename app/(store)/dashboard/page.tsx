@@ -9,6 +9,7 @@ import { getBirthdayCard } from "@/lib/data/birthday";
 import { getMyOrders, type OrderStatus } from "@/lib/data/member";
 import { formatTHB, formatThaiDate } from "@/lib/utils/format";
 import { BirthdayCard } from "@/components/dashboard/birthday-card";
+import { PendingPaymentReminder } from "@/components/orders/pending-payment-reminder";
 import { OrderStatusBadge } from "@/components/orders/status-badge";
 import { ProductImage } from "@/components/products/product-image";
 import { Skeleton, StatCard } from "@/components/ui/misc";
@@ -30,11 +31,13 @@ async function Overview({ searchParams }: { searchParams: PageProps<"/dashboard"
 
   const supabase = await createClient();
   const [orders, wishlist, bookings, rewards, birthday, recent] = await Promise.all([
-    supabase.from("orders").select("id", { count: "exact", head: true }),
+    // explicit user_id: RLS would also count every customer's rows for an admin
+    supabase.from("orders").select("id", { count: "exact", head: true }).eq("user_id", user.id),
     supabase.from("wishlist_items").select("id", { count: "exact", head: true }),
     supabase
       .from("bookings")
       .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
       .in("status", ["pending", "confirmed"]),
     getRewards(),
     getBirthdayCard(user),
@@ -63,6 +66,8 @@ async function Overview({ searchParams }: { searchParams: PageProps<"/dashboard"
         <p className="text-sm text-ink-muted">Member Dashboard</p>
         <h1 className="font-display text-3xl font-bold">สวัสดี, {user.fullName}</h1>
       </div>
+
+      <PendingPaymentReminder />
 
       <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
         <Link href="/dashboard/orders" className="rounded-card hover:shadow-glow">

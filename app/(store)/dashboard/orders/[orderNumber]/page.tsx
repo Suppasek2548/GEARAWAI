@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { getMyOrderByNumber, type OrderStatus, type PaymentStatus } from "@/lib/data/member";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { getCurrentUser, isActiveAdmin } from "@/lib/auth/dal";
 import { getPublicSettings } from "@/lib/data/site";
 import { formatTHB, formatThaiDateTime } from "@/lib/utils/format";
 import { OrderStatusBadge, PaymentStatusBadge } from "@/components/orders/status-badge";
+import { OtherOwnerNotice } from "@/components/orders/other-owner-notice";
 import { OrderTimeline } from "@/components/orders/order-timeline";
 import { CancelOrderButton } from "@/components/orders/cancel-order-button";
 import { ProductImage } from "@/components/products/product-image";
@@ -36,8 +37,12 @@ async function OrderDetail({ params }: { params: PageProps<"/dashboard/orders/[o
     getPublicSettings(),
   ]);
   const demo = payment_mode.mode !== "live" ? " (Demo)" : ""; // D-22
-  // Admins can read every order through RLS, but this page is the member's own view
-  if (!order || !user || order.user_id !== user.id) notFound();
+  if (!order || !user) notFound();
+  if (order.user_id !== user.id) {
+    // Admins can read every order through RLS: explain instead of a confusing 404 (members still get 404)
+    if (isActiveAdmin(user)) return <OtherOwnerNotice orderId={order.id} orderNumber={order.order_number} />;
+    notFound();
+  }
   const status = order.status as OrderStatus;
   const payments = [...(order.payments ?? [])].sort((a, b) => b.created_at.localeCompare(a.created_at));
 
