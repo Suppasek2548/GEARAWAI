@@ -5,7 +5,8 @@ import { BadgeCheck, LayoutGrid, PackageSearch, Search, ShoppingCart } from "luc
 import { getGallery, getPublicSettings, getTeamMembers } from "@/lib/data/site";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 import { ButtonLink } from "@/components/ui/button";
-import { Badge, PageHeader, Skeleton } from "@/components/ui/misc";
+import { Badge, Skeleton } from "@/components/ui/misc";
+import { PageHeader } from "@/components/layout/page-header";
 import { Logo } from "@/components/layout/logo";
 
 export const metadata: Metadata = {
@@ -59,9 +60,19 @@ async function HistoryAndHighlights() {
   return (
     <>
       <section className="container-page grid items-center gap-8 py-12 md:py-16 lg:grid-cols-2">
-        {/* Store history image (1200×800) not provided yet (M15) — brand panel instead */}
-        <div className="flex aspect-[3/2] items-center justify-center rounded-card border border-line bg-brand-gradient">
-          <Logo className="scale-150" />
+        {/* Store history image 1200×800 (Settings → About, D-21) — brand panel when none is set */}
+        <div className="relative flex aspect-[3/2] items-center justify-center overflow-hidden rounded-card border border-line bg-brand-gradient">
+          {about_content.history_image_url ? (
+            <Image
+              src={about_content.history_image_url}
+              alt="ภาพประกอบบรรยากาศร้าน GEARAWAI"
+              fill
+              sizes="(min-width:1024px) 50vw, 100vw"
+              className="object-cover"
+            />
+          ) : (
+            <Logo className="scale-150" />
+          )}
         </div>
         <div className="flex flex-col gap-4">
           <h2 className="font-display text-2xl font-bold md:text-3xl">Store History</h2>

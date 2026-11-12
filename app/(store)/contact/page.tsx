@@ -7,7 +7,8 @@ import { Breadcrumb } from "@/components/shared/breadcrumb";
 import { SocialIcons } from "@/components/shared/social-icons";
 import { ContactForm } from "@/components/forms/contact-form";
 import { Logo } from "@/components/layout/logo";
-import { PageHeader, Skeleton } from "@/components/ui/misc";
+import { Skeleton } from "@/components/ui/misc";
+import { PageHeader } from "@/components/layout/page-header";
 
 export const metadata: Metadata = {
   title: "Contact Us",

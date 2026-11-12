@@ -7,7 +7,8 @@ import { getCurrentUser } from "@/lib/auth/dal";
 import { thTodayISO } from "@/lib/utils/format";
 import { BookingForm } from "@/components/booking/booking-form";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
-import { PageHeader, Skeleton } from "@/components/ui/misc";
+import { Skeleton } from "@/components/ui/misc";
+import { PageHeader } from "@/components/layout/page-header";
 
 export const metadata: Metadata = {
   title: "Booking",

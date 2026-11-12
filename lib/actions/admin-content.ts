@@ -122,6 +122,7 @@ export async function saveStoreSettingsAction(_p: FormState, fd: FormData): Prom
       desktop_url: https,
       tablet_url: https,
       mobile_url: https,
+      page_banner_url: https,
       cta_label: z.string().trim().min(1).max(30),
       cta_href: z
         .string()
@@ -138,6 +139,7 @@ export async function saveStoreSettingsAction(_p: FormState, fd: FormData): Prom
         desktop_url: d.desktop_url,
         tablet_url: d.tablet_url,
         mobile_url: d.mobile_url,
+        page_banner_url: d.page_banner_url,
         cta_label: d.cta_label,
         cta_href: d.cta_href,
       },
@@ -154,6 +156,7 @@ export async function saveAboutSettingsAction(_p: FormState, fd: FormData): Prom
     .object({
       history: z.string().trim().min(1, "กรุณากรอกประวัติร้าน").max(3000),
       highlights: z.string().trim().min(1, "กรุณากรอกจุดเด่นอย่างน้อย 1 ข้อ").max(2000),
+      history_image_url: https,
     })
     .safeParse(raw);
   if (!parsed.success) return { status: "error", fieldErrors: zodErrors(parsed.error), values: raw };
@@ -162,7 +165,16 @@ export async function saveAboutSettingsAction(_p: FormState, fd: FormData): Prom
     .map((s) => s.trim())
     .filter(Boolean)
     .slice(0, 10);
-  return writeSettings({ about_content: { history: parsed.data.history, highlights } }, PATHS.settings);
+  return writeSettings(
+    {
+      about_content: {
+        history: parsed.data.history,
+        highlights,
+        history_image_url: parsed.data.history_image_url,
+      },
+    },
+    PATHS.settings,
+  );
 }
 
 export async function saveContactSettingsAction(_p: FormState, fd: FormData): Promise<FormState> {

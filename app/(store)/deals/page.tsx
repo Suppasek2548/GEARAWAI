@@ -3,9 +3,11 @@ import { Suspense } from "react";
 import { Tag } from "lucide-react";
 import { getActivePromotions, getDiscountedProducts } from "@/lib/data/catalog";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
+import { ScrollToHash } from "@/components/shared/scroll-to-hash";
 import { ProductCard, ProductGrid } from "@/components/products/product-card";
 import { PromotionCard } from "@/components/promotions/promotion-card";
-import { EmptyState, PageHeader, Skeleton } from "@/components/ui/misc";
+import { EmptyState, Skeleton } from "@/components/ui/misc";
+import { PageHeader } from "@/components/layout/page-header";
 import { ButtonLink } from "@/components/ui/button";
 
 export const metadata: Metadata = { title: "Deals" };
@@ -85,6 +87,8 @@ async function DealsContent() {
           </ProductGrid>
         </section>
       )}
+      {/* /deals#slug from a promotion card: jump to that promotion once this streamed content exists */}
+      <ScrollToHash />
     </>
   );
 }

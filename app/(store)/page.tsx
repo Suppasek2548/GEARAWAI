@@ -164,7 +164,7 @@ async function PopularCategories() {
   const categories = await getCategoriesWithCounts();
   return (
     // Mobile: horizontal scroll-snap (~2.5 cards) · Tablet/Laptop 4×2 · Desktop 8 columns (UI §4.4)
-    <ul className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-4 md:overflow-visible md:px-0 md:pb-0 desk:grid-cols-8">
+    <ul className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:auto-rows-fr md:grid-cols-4 md:overflow-visible md:px-0 md:pb-0 desk:grid-cols-8">
       {categories.map((c) => (
         <li key={c.slug} className="w-[40%] shrink-0 snap-start md:w-auto">
           <CategoryCard category={c} />

@@ -3,7 +3,8 @@ import { Suspense } from "react";
 import { getCategoriesWithCounts } from "@/lib/data/catalog";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 import { CategoryCard } from "@/components/products/category-card";
-import { PageHeader, Skeleton } from "@/components/ui/misc";
+import { Skeleton } from "@/components/ui/misc";
+import { PageHeader } from "@/components/layout/page-header";
 
 export const metadata: Metadata = { title: "Categories" };
 
@@ -34,7 +35,7 @@ export default function CategoriesPage() {
 async function CategoryGrid() {
   const categories = await getCategoriesWithCounts();
   return (
-    <ul className="grid grid-cols-2 gap-4 md:grid-cols-4">
+    <ul className="grid auto-rows-fr grid-cols-2 gap-4 md:grid-cols-4">
       {categories.map((c) => (
         <li key={c.slug}>
           <CategoryCard category={c} />

@@ -104,15 +104,3 @@ export function StatCard({
     </div>
   );
 }
-
-/* ---------------- Page heading with breadcrumb slot ---------------- */
-export function PageHeader({ title, children }: { title: string; children?: ReactNode }) {
-  return (
-    <div className="bg-brand-gradient">
-      <div className="container-page flex flex-col gap-2 py-10 md:py-14">
-        <h1 className="font-display text-3xl font-bold md:text-4xl">{title}</h1>
-        {children}
-      </div>
-    </div>
-  );
-}

@@ -8,6 +8,8 @@ export type HeroBanner = {
   desktop_url: string;
   tablet_url: string;
   mobile_url: string;
+  /** Page heading band image (Deals/About/Contact/Categories/Booking) — SPEC 1920×300, D-20 */
+  page_banner_url: string;
   cta_label: string;
   cta_href: string;
 };
@@ -19,7 +21,8 @@ export type StoreContact = {
   is_sample: boolean;
 };
 export type SocialLinks = Partial<Record<"facebook" | "instagram" | "tiktok" | "youtube", string | null>>;
-export type AboutContent = { history: string; highlights: string[] };
+/** history_image_url — Store History image on /about (SPEC system 2: 1200×800), D-21 */
+export type AboutContent = { history: string; highlights: string[]; history_image_url: string };
 export type PointsRule = { baht_per_point: number };
 export type ShippingRule = { flat_fee: number; free_shipping_min: number };
 export type PaymentMode = {
@@ -48,10 +51,17 @@ const DEFAULTS: PublicSettings = {
     slogan: "LEVEL UP YOUR GEAR",
     tagline: "Upgrade your setup with premium gaming gear and IT accessories.",
   },
-  hero_banner: { desktop_url: "", tablet_url: "", mobile_url: "", cta_label: "SHOP NOW", cta_href: "/shop" },
+  hero_banner: {
+    desktop_url: "",
+    tablet_url: "",
+    mobile_url: "",
+    page_banner_url: "",
+    cta_label: "SHOP NOW",
+    cta_href: "/shop",
+  },
   store_contact: { phone: null, email: null, address: null, map_embed_url: null, is_sample: true },
   social_links: {},
-  about_content: { history: "", highlights: [] },
+  about_content: { history: "", highlights: [], history_image_url: "" },
   points_rule: { baht_per_point: 100 },
   shipping_rule: { flat_fee: 50, free_shipping_min: 1000 },
   payment_mode: {

@@ -80,6 +80,12 @@ async function Content({ searchParams }: { searchParams: PageProps<"/admin/setti
             { name: "desktop_url", label: "Hero Desktop (1920×700)", type: "image", category: "banner" },
             { name: "tablet_url", label: "Hero Tablet (1200×600)", type: "image", category: "banner" },
             { name: "mobile_url", label: "Hero Mobile (750×1000)", type: "image", category: "banner" },
+            {
+              name: "page_banner_url",
+              label: "Page Banner (1920×300) — แถบหัวหน้า Deals / About / Contact / Categories / จองบริการ",
+              type: "image",
+              category: "banner",
+            },
           ]}
         />
       )}
@@ -92,6 +98,7 @@ async function Content({ searchParams }: { searchParams: PageProps<"/admin/setti
             defaults={{
               history: (g("about_content").history as string) ?? "",
               highlights: ((g("about_content").highlights as string[]) ?? []).join("\n"),
+              history_image_url: (g("about_content").history_image_url as string) ?? "",
             }}
             fields={[
               {
@@ -100,6 +107,13 @@ async function Content({ searchParams }: { searchParams: PageProps<"/admin/setti
                 type: "textarea",
                 required: true,
                 maxLength: 3000,
+              },
+              {
+                // category "other" (not "gallery") so this picture does not also appear in Store Gallery
+                name: "history_image_url",
+                label: "ภาพประวัติร้าน (1200×800) — ไม่ใส่ = แสดงโลโก้บนพื้น Gradient",
+                type: "image",
+                category: "other",
               },
               {
                 name: "highlights",

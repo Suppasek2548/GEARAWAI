@@ -9,7 +9,7 @@ export function CategoryCard({ category }: { category: CategoryOption }) {
   return (
     <Link
       href={`/shop?category=${category.slug}`}
-      className="group flex flex-col items-center gap-3 rounded-card border border-line bg-surface p-4 text-center transition-all hover:-translate-y-1 hover:border-brand-accent hover:shadow-glow"
+      className="group flex h-full flex-col items-center gap-3 rounded-card border border-line bg-surface p-4 text-center transition-all hover:-translate-y-1 hover:border-brand-accent hover:shadow-glow"
     >
       <div className="relative flex aspect-square w-full max-w-36 items-center justify-center overflow-hidden rounded-card bg-brand-gradient">
         {category.imageUrl ? (
