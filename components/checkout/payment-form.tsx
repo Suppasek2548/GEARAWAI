@@ -127,6 +127,7 @@ export function PaymentForm({
                 alt="QR สำหรับชำระเงิน"
                 width={250}
                 height={250}
+                loading="eager"
                 className="size-[250px] max-w-full rounded-btn bg-white object-contain"
               />
               <p className={cn("text-sm", live ? "text-ink-soft" : "text-warning")}>
