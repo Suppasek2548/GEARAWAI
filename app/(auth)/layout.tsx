@@ -7,6 +7,17 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
   return (
     <div className="grid min-h-dvh lg:grid-cols-2">
       <aside className="relative hidden overflow-hidden bg-brand-gradient lg:flex lg:flex-col lg:justify-between lg:p-12">
+        {/* Gaming-gear photo (2:3), cover + centred. A CSS background so phones — where this panel is
+            display:none — never download it; the brand gradient stays underneath as a fallback. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[url('/images/auth/login-bg.webp')] bg-cover bg-center"
+        />
+        {/* Dark overlay: strongest on the left where the white heading and benefits sit */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(5,5,15,0.72)_0%,rgba(5,5,15,0.48)_55%,rgba(5,5,15,0.28)_100%)]"
+        />
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgb(227_239_79/0.18),transparent_45%)]"
@@ -33,7 +44,8 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
         <p className="relative text-xs text-ink-soft">โครงงานเพื่อการศึกษา · ระบบชำระเงินเป็นระบบจำลอง</p>
       </aside>
 
-      <div className="flex flex-col bg-canvas md:bg-brand-gradient lg:bg-canvas lg:bg-none">
+      {/* dark canvas on every size (the tablet-only blue brand gradient was removed) */}
+      <div className="flex flex-col bg-canvas">
         <div className="flex items-center justify-between p-4 md:p-6">
           <Link href="/" className="inline-flex items-center gap-2 text-sm text-ink-soft hover:text-ink">
             <ArrowLeft className="size-4" aria-hidden /> กลับหน้าร้าน
