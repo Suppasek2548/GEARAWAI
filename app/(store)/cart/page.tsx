@@ -6,6 +6,7 @@ import { getMyCart } from "@/lib/data/member";
 import { getPublicSettings } from "@/lib/data/site";
 import { formatTHB } from "@/lib/utils/format";
 import { CartRow } from "@/components/cart/cart-row";
+import { StickyCheckoutBar } from "@/components/cart/sticky-checkout-bar";
 import { PendingPaymentReminder } from "@/components/orders/pending-payment-reminder";
 import { ButtonLink } from "@/components/ui/button";
 import { EmptyState, Skeleton } from "@/components/ui/misc";
@@ -104,18 +105,20 @@ async function CartContent() {
               มีสินค้าที่ไม่พร้อมจำหน่ายหรือสต็อกไม่พอ กรุณาแก้ไขรายการที่ไฮไลต์ก่อน Checkout
             </p>
           )}
-          <CheckoutButton disabled={blocked} />
+          <div id="cart-summary-checkout">
+            <CheckoutButton disabled={blocked} />
+          </div>
         </aside>
       </div>
 
-      {/* Mobile sticky bar (UI §8.3) */}
-      <div className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-3 border-t border-line bg-surface/95 px-4 py-3 backdrop-blur lg:hidden">
+      {/* Mobile sticky bar (UI §8.3) — hides while the summary's CHECKOUT above is on screen */}
+      <StickyCheckoutBar targetId="cart-summary-checkout">
         <div>
           <p className="text-xs text-ink-soft">Total</p>
           <p className="font-display text-lg font-bold text-brand-lime">{formatTHB(subtotal + shipping)}</p>
         </div>
         <CheckoutButton disabled={blocked} compact />
-      </div>
+      </StickyCheckoutBar>
     </>
   );
 }

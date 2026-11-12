@@ -101,6 +101,9 @@ export async function placeOrderAction(_prev: PlaceOrderState, formData: FormDat
     return { error: error ? toThaiError(error) : GENERIC_ERROR, values: raw };
   }
 
+  // place_order() emptied the cart. Refresh the client router so the redirect also re-renders the root
+  // layout — otherwise the header keeps the old cart badge (the layout is reused on navigation).
+  refresh();
   redirect(`/checkout/payment/${orderNumber}`);
 }
 
