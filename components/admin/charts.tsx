@@ -102,7 +102,7 @@ export function SalesChart({
                   title={thaiShort(p.period, group)}
                   lines={[
                     ["ยอดขาย", formatTHB(p.sales)],
-                    ["Order สำเร็จ", String(p.order_count)],
+                    ["Order ชำระแล้ว/จัดส่ง/สำเร็จ", String(p.order_count)],
                   ]}
                 />
               );

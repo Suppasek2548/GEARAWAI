@@ -38,7 +38,7 @@ export function ReportView({
       <div className="flex flex-col gap-4">
         <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
           <StatCard label="ยอดขายรวม" value={formatTHB(data.sales.totalSales)} />
-          <StatCard label="จำนวน Order สำเร็จ" value={data.sales.totalOrders.toLocaleString("th-TH")} />
+          <StatCard label="จำนวน Order ที่ชำระแล้ว" value={data.sales.totalOrders.toLocaleString("th-TH")} />
           <StatCard label="ค่าเฉลี่ยต่อ Order" value={formatTHB(data.sales.average)} />
         </div>
         {!print && (
@@ -50,7 +50,7 @@ export function ReportView({
           </section>
         )}
         <Table
-          head={[range.group === "month" ? "เดือน" : "วันที่", "Order สำเร็จ", "ยอดขาย"]}
+          head={[range.group === "month" ? "เดือน" : "วันที่", "Order ที่ชำระแล้ว", "ยอดขาย"]}
           align={["l", "r", "r"]}
           rows={rows.map((r) => [
             periodLabel(r.period, range.group),
@@ -147,7 +147,7 @@ export function ReportView({
           <StatCard label="ลูกค้าที่มียอดซื้อ (Top 10)" value={data.customers.top.length.toLocaleString("th-TH")} />
         </div>
         <Table
-          head={["#", "ลูกค้า", "อีเมล", "Order สำเร็จ", "ยอดซื้อ"]}
+          head={["#", "ลูกค้า", "อีเมล", "Order ที่ชำระแล้ว", "ยอดซื้อ"]}
           align={["l", "l", "l", "r", "r"]}
           rows={data.customers.top.map((c, i) => [
             String(i + 1),

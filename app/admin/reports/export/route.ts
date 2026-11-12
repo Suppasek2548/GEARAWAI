@@ -62,7 +62,7 @@ export async function GET(request: Request) {
     "Sales",
     [
       { header: range.group === "month" ? "เดือน" : "วันที่", width: 16 },
-      { header: "Order สำเร็จ", width: 14 },
+      { header: "Order ที่ชำระแล้ว", width: 14 },
       { header: "ยอดขาย (บาท)", width: 18, money: true },
     ],
     data.sales.rows.map((r) => [
@@ -106,7 +106,7 @@ export async function GET(request: Request) {
       { header: "#", width: 6 },
       { header: "ลูกค้า", width: 28 },
       { header: "อีเมล", width: 32 },
-      { header: "Order สำเร็จ", width: 14 },
+      { header: "Order ที่ชำระแล้ว", width: 14 },
       { header: "ยอดซื้อ (บาท)", width: 18, money: true },
     ],
     data.customers.top.map((c, i) => [i + 1, c.full_name, c.email, c.order_count, c.total_spent]),

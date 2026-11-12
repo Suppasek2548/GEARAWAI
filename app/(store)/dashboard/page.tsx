@@ -31,14 +31,9 @@ async function Overview({ searchParams }: { searchParams: PageProps<"/dashboard"
 
   const supabase = await createClient();
   const [orders, wishlist, bookings, rewards, birthday, recent] = await Promise.all([
-    // explicit user_id: RLS would also count every customer's rows for an admin.
-    // Count orders from "paid" onward (paid → shipped → completed). Awaiting payment, payment
-    // submitted but not yet verified, and cancelled orders are not counted.
-    supabase
-      .from("orders")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .in("status", ["paid", "shipped", "completed"]),
+    // Total orders of THIS member in every status, cancelled included (same rule as admin "Total Orders").
+    // Explicit user_id: RLS would also count every customer's rows for an admin.
+    supabase.from("orders").select("id", { count: "exact", head: true }).eq("user_id", user.id),
     supabase.from("wishlist_items").select("id", { count: "exact", head: true }),
     supabase
       .from("bookings")

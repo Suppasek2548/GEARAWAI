@@ -7,14 +7,19 @@ import {
   AlertTriangle,
   Banknote,
   CalendarClock,
+  CheckCircle2,
+  Clock,
+  FlaskConical,
   Gift,
   Mail,
   Package,
   ShoppingBag,
   Users,
+  XCircle,
 } from "lucide-react";
 import { parseRange } from "@/lib/admin/report-range";
 import { getDashboard } from "@/lib/data/admin-reports";
+import type { OrderStatus } from "@/lib/data/member";
 import { formatTHB, formatThaiDate, formatThaiDateTime, thTodayISO } from "@/lib/utils/format";
 import { CategoryDonut, SalesChart } from "@/components/admin/charts";
 import { DateRangeFilter } from "@/components/admin/date-range-filter";
@@ -43,6 +48,11 @@ async function Overview({ searchParams }: { searchParams: PageProps<"/admin">["s
   const range = parseRange(await searchParams, thTodayISO());
   const d = await getDashboard(range);
   const breakdown = d.statusRows.map((r) => `${orderStatusLabel(r.status)} ${r.order_count}`).join(" · ");
+  // Order counts by status come from report_order_status() (already loaded) — no extra query.
+  const countOf = (...statuses: OrderStatus[]) =>
+    d.statusRows.filter((r) => statuses.includes(r.status)).reduce((a, r) => a + r.order_count, 0);
+  const awaitingPayment = countOf("pending_payment");
+  const awaitingVerify = countOf("payment_submitted");
 
   const tasks = [
     { href: "/admin/payments", label: "แจ้งชำระรอตรวจ", count: d.stats.pending_payments, icon: Banknote },
@@ -55,8 +65,23 @@ async function Overview({ searchParams }: { searchParams: PageProps<"/admin">["s
     <>
       <DateRangeFilter basePath="/admin" range={range} />
       <p className="text-sm text-ink-soft">
-        ช่วงวันที่ {formatThaiDate(range.from)} – {formatThaiDate(range.to)} (เวลาไทย) · ยอดขายนับเฉพาะ Order
-        ที่ชำระแล้ว/จัดส่ง/สำเร็จ
+        ช่วงวันที่ {formatThaiDate(range.from)} – {formatThaiDate(range.to)} (เวลาไทย) ·
+        ตัวกรองนี้ใช้กับการ์ดและกราฟที่ระบุว่า &ldquo;ตามช่วงวันที่&rdquo; เท่านั้น (นับตามวันที่สร้าง Order) · ยอดขายนับเฉพาะ Order
+        ที่ชำระแล้ว/จัดส่ง/สำเร็จ ไม่รวมที่ยกเลิก
+      </p>
+      <p
+        role="note"
+        className="flex items-start gap-2 rounded-btn border border-line bg-elevated p-3 text-sm text-ink-soft"
+      >
+        <FlaskConical className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden />
+        <span>
+          <strong className="text-warning">Dashboard นี้รวม Demo Data เสมอ</strong> — หากต้องการตัวเลขที่ไม่รวม Demo
+          Data ให้ใช้หน้า{" "}
+          <Link href="/admin/reports" className="text-brand-accent hover:underline">
+            Reports
+          </Link>{" "}
+          ซึ่งเลือกเปิด/ปิด Demo Data ได้
+        </span>
       </p>
       {d.error && (
         <p className="rounded-btn border border-danger/40 bg-danger/10 p-3 text-sm text-danger">
@@ -64,49 +89,89 @@ async function Overview({ searchParams }: { searchParams: PageProps<"/admin">["s
         </p>
       )}
 
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
-        <StatCard label="Total Sales" value={formatTHB(d.stats.total_sales)} icon={Banknote} />
-        <StatCard
-          label="Total Orders"
-          value={d.stats.total_orders.toLocaleString("th-TH")}
-          icon={ShoppingBag}
-        />
-        <StatCard
-          label="Total Customers"
-          value={d.stats.total_customers.toLocaleString("th-TH")}
-          icon={Users}
-        />
-        <StatCard
-          label="Total Products"
-          value={
-            <span>
-              {d.stats.total_products}
-              <span className="ml-2 font-sans text-sm font-normal text-ink-muted">
-                เปิดขาย {d.products.active} · ปิด {d.products.inactive}
+      <section aria-labelledby="in-range-heading" className="flex flex-col gap-3">
+        <h2 id="in-range-heading" className="font-display text-lg font-semibold">
+          ตามช่วงวันที่ที่เลือก
+        </h2>
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
+          <StatCard label="Total Sales" value={formatTHB(d.stats.total_sales)} icon={Banknote} />
+          <StatCard
+            label="Total Orders (ทุกสถานะ)"
+            value={d.stats.total_orders.toLocaleString("th-TH")}
+            icon={ShoppingBag}
+          />
+          <StatCard
+            label="Pending Orders"
+            value={
+              <span>
+                {(awaitingPayment + awaitingVerify).toLocaleString("th-TH")}
+                <span className="ml-2 font-sans text-sm font-normal text-ink-muted">
+                  รอชำระ {awaitingPayment} · รอตรวจ {awaitingVerify}
+                </span>
               </span>
-            </span>
-          }
-          icon={Package}
-        />
-      </div>
-      {breakdown && <p className="-mt-2 text-xs text-ink-muted">Order ตามสถานะ: {breakdown}</p>}
+            }
+            icon={Clock}
+          />
+          <StatCard
+            label="Completed Orders"
+            value={countOf("completed").toLocaleString("th-TH")}
+            icon={CheckCircle2}
+          />
+          <StatCard
+            label="Cancelled Orders"
+            value={countOf("cancelled").toLocaleString("th-TH")}
+            icon={XCircle}
+          />
+        </div>
+        {breakdown && <p className="text-xs text-ink-muted">Order ตามสถานะ: {breakdown}</p>}
+      </section>
+
+      <section aria-labelledby="all-time-heading" className="flex flex-col gap-3">
+        <h2 id="all-time-heading" className="font-display text-lg font-semibold">
+          ยอดรวมทั้งหมด <span className="font-sans text-sm font-normal text-ink-muted">(ไม่ขึ้นกับช่วงวันที่)</span>
+        </h2>
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
+          <StatCard
+            label="Total Customers"
+            value={d.stats.total_customers.toLocaleString("th-TH")}
+            icon={Users}
+          />
+          <StatCard
+            label="Total Products"
+            value={
+              <span>
+                {d.stats.total_products}
+                <span className="ml-2 font-sans text-sm font-normal text-ink-muted">
+                  เปิดขาย {d.products.active} · ปิด {d.products.inactive}
+                </span>
+              </span>
+            }
+            icon={Package}
+          />
+        </div>
+      </section>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <section className="min-w-0 rounded-card border border-line bg-surface p-4">
-          <h2 className="mb-3 font-display text-lg font-semibold">
+          <h2 className="font-display text-lg font-semibold">
             Sales Overview {range.group === "month" ? "(รายเดือน)" : "(รายวัน)"}
           </h2>
+          <p className="mb-3 text-xs text-ink-muted">ตามช่วงวันที่ที่เลือก · ชำระแล้ว/จัดส่ง/สำเร็จ</p>
           <SalesChart rows={d.sales} group={range.group} />
         </section>
         <section className="min-w-0 rounded-card border border-line bg-surface p-4">
-          <h2 className="mb-3 font-display text-lg font-semibold">Top Categories</h2>
+          <h2 className="font-display text-lg font-semibold">Top Categories</h2>
+          <p className="mb-3 text-xs text-ink-muted">ตามช่วงวันที่ที่เลือก · ชำระแล้ว/จัดส่ง/สำเร็จ</p>
           <CategoryDonut rows={d.categories} size={240} />
         </section>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="flex min-w-0 flex-col gap-2 rounded-card border border-line bg-surface p-4">
-          <h2 className="font-display text-lg font-semibold">Pending Tasks</h2>
+          <div>
+            <h2 className="font-display text-lg font-semibold">Pending Tasks</h2>
+            <p className="text-xs text-ink-muted">งานที่ค้างอยู่ตอนนี้ — ไม่ขึ้นกับช่วงวันที่</p>
+          </div>
           <ul className="flex flex-col divide-y divide-line">
             {tasks.map((t) => (
               <li key={t.href}>
@@ -121,7 +186,12 @@ async function Overview({ searchParams }: { searchParams: PageProps<"/admin">["s
         </section>
         <section className="flex min-w-0 flex-col gap-2 rounded-card border border-line bg-surface p-4">
           <div className="flex items-center justify-between gap-2">
-            <h2 className="font-display text-lg font-semibold">Alerts — สต็อกต่ำ/หมด ({d.stats.low_stock})</h2>
+            <div>
+              <h2 className="font-display text-lg font-semibold">
+                Alerts — สต็อกต่ำ/หมด ({d.stats.low_stock})
+              </h2>
+              <p className="text-xs text-ink-muted">สต็อกปัจจุบัน — ไม่ขึ้นกับช่วงวันที่</p>
+            </div>
             <Link href="/admin/stock" className="text-sm text-brand-accent hover:underline">
               Stock
             </Link>
@@ -154,7 +224,10 @@ async function Overview({ searchParams }: { searchParams: PageProps<"/admin">["s
 
       <section className="flex flex-col gap-2">
         <div className="flex items-center justify-between gap-2">
-          <h2 className="font-display text-lg font-semibold">Recent Orders</h2>
+          <div>
+            <h2 className="font-display text-lg font-semibold">Recent Orders</h2>
+            <p className="text-xs text-ink-muted">8 รายการล่าสุด ทุกสถานะ — ไม่ขึ้นกับช่วงวันที่</p>
+          </div>
           <ButtonLink href="/admin/orders" size="sm" variant="outline">
             ดูทั้งหมด
           </ButtonLink>
