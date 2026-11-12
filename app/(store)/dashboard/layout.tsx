@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { AlertTriangle } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth/dal";
+import { getCurrentUser, isActiveAdmin } from "@/lib/auth/dal";
 import { formatThaiDate } from "@/lib/utils/format";
 import { DashboardNav } from "@/components/dashboard/dashboard-nav";
 import { MemberAvatar } from "@/components/dashboard/member-avatar";
@@ -36,7 +36,7 @@ async function MemberShell({ children }: { children: React.ReactNode }) {
         <div className="hidden justify-center md:flex lg:hidden">
           <MemberAvatar name={user.fullName} url={user.avatarUrl} size={48} />
         </div>
-        <DashboardNav />
+        <DashboardNav isAdmin={isActiveAdmin(user)} />
       </aside>
 
       <div className="flex min-w-0 flex-col gap-6">

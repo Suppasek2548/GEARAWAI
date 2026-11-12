@@ -436,6 +436,56 @@ export type Database = {
           },
         ]
       }
+      member_addresses: {
+        Row: {
+          address_line: string
+          created_at: string
+          district: string
+          full_name: string
+          id: string
+          phone: string
+          postal_code: string
+          province: string
+          subdistrict: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address_line: string
+          created_at?: string
+          district: string
+          full_name: string
+          id?: string
+          phone: string
+          postal_code: string
+          province: string
+          subdistrict: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          address_line?: string
+          created_at?: string
+          district?: string
+          full_name?: string
+          id?: string
+          phone?: string
+          postal_code?: string
+          province?: string
+          subdistrict?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_addresses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       member_coupons: {
         Row: {
           claimed_at: string

@@ -138,6 +138,56 @@ export async function getMyOrderByNumber(orderNumber: string) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Shipping addresses (D-24)                                            */
+/* ------------------------------------------------------------------ */
+
+export type MemberAddress = {
+  id: string;
+  full_name: string;
+  phone: string;
+  address_line: string;
+  subdistrict: string;
+  district: string;
+  postal_code: string;
+  province: string;
+  created_at: string;
+};
+
+const ADDRESS_COLUMNS =
+  "id, full_name, phone, address_line, subdistrict, district, postal_code, province, created_at";
+
+/**
+ * The signed-in member's OWN addresses, newest first. `error` is set when the table cannot be read
+ * (e.g. migration 0020 not applied yet) so the page can say so instead of showing an empty list.
+ */
+export async function getMyAddresses(): Promise<{ addresses: MemberAddress[]; error: boolean }> {
+  const user = await getCurrentUser();
+  if (!user) return { addresses: [], error: false };
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("member_addresses")
+    .select(ADDRESS_COLUMNS)
+    .eq("user_id", user.id) // RLS also lets admins read every row — keep this list personal
+    .order("created_at", { ascending: false });
+  return { addresses: data ?? [], error: Boolean(error) };
+}
+
+/** One of the signed-in member's own addresses (null when missing or someone else's). */
+export async function getMyAddress(id: string): Promise<MemberAddress | null> {
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
+  const user = await getCurrentUser();
+  if (!user) return null;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("member_addresses")
+    .select(ADDRESS_COLUMNS)
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  return data;
+}
+
+/* ------------------------------------------------------------------ */
 /* Bookings (S08-F07)                                                   */
 /* ------------------------------------------------------------------ */
 

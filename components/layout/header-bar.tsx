@@ -8,6 +8,7 @@ import {
   Heart,
   LayoutDashboard,
   LogIn,
+  MapPinned,
   Menu,
   Search,
   ShieldCheck,
@@ -289,6 +290,12 @@ function AccountMenu({ user }: { user: HeaderUser | undefined }) {
               <Link href="/dashboard/orders" className={item} onClick={() => setOpen(false)}>
                 <ShoppingCart className="size-4" aria-hidden /> คำสั่งซื้อของฉัน
               </Link>
+              {/* D-24: members only, right after "คำสั่งซื้อของฉัน" */}
+              {!user.isAdmin && (
+                <Link href="/dashboard/addresses" className={item} onClick={() => setOpen(false)}>
+                  <MapPinned className="size-4" aria-hidden /> ที่อยู่สำหรับจัดส่ง
+                </Link>
+              )}
               {user.isAdmin && (
                 <Link href="/admin" className={item} onClick={() => setOpen(false)}>
                   <ShieldCheck className="size-4" aria-hidden /> Admin Panel

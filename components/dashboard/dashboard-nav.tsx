@@ -8,6 +8,7 @@ import {
   Gift,
   Heart,
   LayoutDashboard,
+  MapPinned,
   Package,
   Ticket,
   UserRound,
@@ -17,9 +18,10 @@ import { cn } from "@/lib/utils/cn";
 import { LogoutButton } from "@/components/auth/logout-button";
 
 // UI §11.1 sidebar menu
-const ITEMS: { href: string; label: string; icon: LucideIcon; exact?: boolean }[] = [
+const ITEMS: { href: string; label: string; icon: LucideIcon; exact?: boolean; memberOnly?: boolean }[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/dashboard/orders", label: "My Orders", icon: Package },
+  { href: "/dashboard/addresses", label: "Addresses", icon: MapPinned, memberOnly: true }, // D-24
   { href: "/dashboard/points", label: "Points", icon: Coins },
   { href: "/dashboard/rewards", label: "Rewards", icon: Gift },
   { href: "/dashboard/coupons", label: "Coupons", icon: Ticket },
@@ -32,12 +34,12 @@ const ITEMS: { href: string; label: string; icon: LucideIcon; exact?: boolean }[
  * Desktop/Laptop: full labels (240px) · Tablet (md–lg): icons only (72px) with tooltips ·
  * Mobile: horizontal scrolling tabs under the header (UI §11.3).
  */
-export function DashboardNav() {
+export function DashboardNav({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
   return (
     <nav aria-label="เมนูสมาชิก">
       <ul className="-mx-4 flex gap-1 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-col md:overflow-visible md:px-0 md:pb-0">
-        {ITEMS.map(({ href, label, icon: Icon, exact }) => {
+        {ITEMS.filter((i) => !(i.memberOnly && isAdmin)).map(({ href, label, icon: Icon, exact }) => {
           const active = exact ? pathname === href : pathname.startsWith(href);
           return (
             <li key={href} className="shrink-0">

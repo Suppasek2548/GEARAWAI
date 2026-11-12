@@ -8,6 +8,7 @@ import { getCurrentUser } from "@/lib/auth/dal";
 import { UUID_RE } from "@/lib/admin/guard";
 import { setAccountStatusAction, setMemberBirthDateAction } from "@/lib/actions/admin-members";
 import { formatTHB, formatThaiDate, formatThaiDateTime } from "@/lib/utils/format";
+import { formatAddressLines } from "@/lib/utils/address";
 import type { OrderStatus } from "@/lib/data/member";
 import { ActionButton } from "@/components/admin/action-button";
 import { AdminShell } from "@/components/admin/ui";
@@ -47,6 +48,7 @@ async function Detail({ params }: { params: PageProps<"/admin/customers/[id]">["
     { data: redemptions },
     { data: coupons },
     { data: bookings },
+    addressesRes,
   ] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", id).maybeSingle(),
     getCurrentUser(),
@@ -72,7 +74,14 @@ async function Detail({ params }: { params: PageProps<"/admin/customers/[id]">["
       .select("id, booking_number, booking_date, status")
       .eq("user_id", id)
       .order("booking_date", { ascending: false }),
+    // D-24: saved shipping addresses — admins may READ only (RLS), never edit or delete
+    supabase
+      .from("member_addresses")
+      .select("id, full_name, phone, address_line, subdistrict, district, postal_code, province, created_at")
+      .eq("user_id", id)
+      .order("created_at", { ascending: false }),
   ]);
+  const addresses = addressesRes.data ?? [];
   if (!m) notFound();
   const isSelf = me?.id === m.id;
 
@@ -191,6 +200,32 @@ async function Detail({ params }: { params: PageProps<"/admin/customers/[id]">["
           </ul>
         </section>
       </div>
+
+      <section aria-labelledby="addr-heading" className="flex flex-col gap-2">
+        <h2 id="addr-heading" className="font-display text-lg font-semibold">
+          ที่อยู่สำหรับจัดส่งที่บันทึกไว้ ({addresses.length})
+        </h2>
+        <p className="text-xs text-ink-muted">ดูได้อย่างเดียว — ลูกค้าเป็นผู้เพิ่ม แก้ไข หรือลบเองที่หน้าที่อยู่สำหรับจัดส่ง</p>
+        {addressesRes.error ? (
+          <p className="rounded-card border border-line bg-surface p-3 text-sm text-ink-soft">
+            ยังโหลดที่อยู่ไม่ได้ (ระบบที่อยู่อาจยังไม่ได้เปิดใช้งานในฐานข้อมูล)
+          </p>
+        ) : addresses.length === 0 ? (
+          <p className="rounded-card border border-line bg-surface p-3 text-sm text-ink-soft">
+            ลูกค้ายังไม่ได้บันทึกที่อยู่
+          </p>
+        ) : (
+          <ul className="grid gap-2 md:grid-cols-2">
+            {addresses.map((a) => (
+              <li key={a.id} className="rounded-card border border-line bg-surface p-3 text-sm">
+                <p className="font-semibold text-ink">{a.full_name}</p>
+                <p className="text-ink-soft">{a.phone}</p>
+                <p className="whitespace-pre-line text-ink-soft">{formatAddressLines(a).join("\n")}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <section className="flex flex-col gap-2">
         <h2 className="font-display text-lg font-semibold">คำสั่งซื้อ ({orders?.length ?? 0})</h2>
