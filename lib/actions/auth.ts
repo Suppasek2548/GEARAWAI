@@ -72,6 +72,11 @@ export async function loginAction(_prev: AuthFormState, formData: FormData): Pro
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error || !data.user) {
+    // Supabase rate limit (HTTP 429 / over_request_rate_limit) is not a wrong password — say so,
+    // otherwise users keep retrying a correct password (Phase 6, BUG-06).
+    if (error?.status === 429 || error?.code === "over_request_rate_limit") {
+      return { error: "พยายามเข้าสู่ระบบหลายครั้งเกินไป กรุณารอสักครู่แล้วลองใหม่", values };
+    }
     // Do not reveal which field was wrong (UI §10.2)
     return { error: "อีเมลหรือรหัสผ่านไม่ถูกต้อง", values };
   }

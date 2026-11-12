@@ -8,15 +8,17 @@ import { loginAction, type AuthFormState } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 import { PasswordInput } from "@/components/ui/password-input";
+import { useFocusFirstError } from "@/hooks/use-focus-first-error";
 
 export function LoginForm() {
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") ?? "";
   const [state, formAction, pending] = useActionState<AuthFormState, FormData>(loginAction, {});
   const fe = state.fieldErrors ?? {};
+  const formRef = useFocusFirstError(state);
 
   return (
-    <form action={formAction} noValidate className="flex flex-col gap-4">
+    <form ref={formRef} action={formAction} noValidate className="flex flex-col gap-4">
       <input type="hidden" name="redirect" value={redirectTo} />
 
       {state.error && (

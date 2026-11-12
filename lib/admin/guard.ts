@@ -43,3 +43,23 @@ export function adminError(error: { code?: string; message: string }): string {
   if (error.code === "23514") return "ข้อมูลไม่ผ่านเงื่อนไขของระบบ กรุณาตรวจสอบค่าที่กรอก";
   return toThaiError(error);
 }
+
+const DUPLICATE_FIELD_TEXT: Record<string, string> = {
+  sku: "SKU นี้ถูกใช้แล้ว",
+  slug: "Slug นี้ถูกใช้แล้ว",
+  name: "ชื่อนี้ถูกใช้แล้ว",
+  code: "รหัสนี้ถูกใช้แล้ว",
+};
+
+/**
+ * Unique violation (23505) → the form field it belongs to, read from Postgres' default
+ * constraint name ("<table>_<column>_key"), e.g. products_sku_key → { sku: "SKU นี้ถูกใช้แล้ว" }.
+ * Returns null for anything else so callers fall back to adminError().
+ */
+export function duplicateFieldError(
+  error: { code?: string; message: string } | null,
+): Record<string, string> | null {
+  if (!error || error.code !== "23505") return null;
+  const column = error.message.match(/"[a-z_]+?_([a-z]+)_key"/)?.[1];
+  return column && DUPLICATE_FIELD_TEXT[column] ? { [column]: DUPLICATE_FIELD_TEXT[column] } : null;
+}

@@ -23,7 +23,8 @@ import { OrderStatusBadge, orderStatusLabel } from "@/components/orders/status-b
 import { Skeleton, StatCard } from "@/components/ui/misc";
 import { ButtonLink } from "@/components/ui/button";
 
-export const metadata: Metadata = { title: "Dashboard Overview" };
+// The admin layout's "%s | GEARAWAI Admin" template only applies to child segments, not this page.
+export const metadata: Metadata = { title: { absolute: "Dashboard Overview | GEARAWAI Admin" } };
 
 /** ADMIN §4.1 — numbers only from admin_dashboard_stats(); no data → 0 + empty charts. */
 export default function AdminHomePage({ searchParams }: PageProps<"/admin">) {

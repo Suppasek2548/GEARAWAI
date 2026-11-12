@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 import { PasswordInput } from "@/components/ui/password-input";
 import { cn } from "@/lib/utils/cn";
+import { useFocusFirstError } from "@/hooks/use-focus-first-error";
 
 function strength(pw: string): { score: number; label: string } {
   let score = 0;
@@ -24,9 +25,10 @@ export function RegisterForm() {
   const [password, setPassword] = useState("");
   const fe = state.fieldErrors ?? {};
   const s = strength(password);
+  const formRef = useFocusFirstError(state);
 
   return (
-    <form action={formAction} noValidate className="flex flex-col gap-4">
+    <form ref={formRef} action={formAction} noValidate className="flex flex-col gap-4">
       {state.error && (
         <div
           role="alert"

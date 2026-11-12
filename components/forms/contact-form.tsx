@@ -6,6 +6,7 @@ import { submitContactAction, type ContactFormState } from "@/lib/actions/contac
 import { MESSAGE_MAX } from "@/lib/validation/contact";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Textarea } from "@/components/ui/field";
+import { useFocusFirstError } from "@/hooks/use-focus-first-error";
 
 /** S20 Contact Form (600×550) — validation, honeypot, loading/disabled while sending, result box 360×100. */
 export function ContactForm({
@@ -20,9 +21,10 @@ export function ContactForm({
   });
   const fe = state.fieldErrors ?? {};
   const v = state.values;
+  const formRef = useFocusFirstError(state);
 
   return (
-    <form action={action} noValidate className="flex w-full flex-col gap-4">
+    <form ref={formRef} action={action} noValidate className="flex w-full flex-col gap-4">
       <div aria-live="polite">
         {state.status === "success" && state.message && (
           <div

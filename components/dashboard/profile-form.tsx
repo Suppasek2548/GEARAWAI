@@ -8,6 +8,7 @@ import { setAvatarUrlAction, updateProfileAction, type ProfileFormState } from "
 import { Button } from "@/components/ui/button";
 import { Field, Input, Textarea } from "@/components/ui/field";
 import { MemberAvatar } from "./member-avatar";
+import { useFocusFirstError } from "@/hooks/use-focus-first-error";
 
 const MIME = ["image/jpeg", "image/png", "image/webp"];
 const MAX_BYTES = 2 * 1024 * 1024;
@@ -30,6 +31,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
   const [uploading, startUpload] = useTransition();
   const fileRef = useRef<HTMLInputElement>(null);
   const fe = state.fieldErrors ?? {};
+  const formRef = useFocusFirstError(state);
 
   const ownPath = (url: string | null) => {
     const marker = `/storage/v1/object/public/avatars/`;
@@ -102,7 +104,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
         </div>
       </div>
 
-      <form action={action} noValidate className="flex flex-col gap-4">
+      <form ref={formRef} action={action} noValidate className="flex flex-col gap-4">
         {state.status === "success" && (
           <p role="status" className="flex items-center gap-2 text-sm text-success">
             <CheckCircle2 className="size-4" aria-hidden /> {state.message}

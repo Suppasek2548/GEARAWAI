@@ -45,29 +45,33 @@ async function DealsContent() {
 
   return (
     <>
-      {promotions.length > 0 && (
-        <section aria-labelledby="promo-heading" className="flex flex-col gap-8">
-          <h2 id="promo-heading" className="font-display text-2xl font-bold md:text-3xl">
-            โปรโมชั่น
-          </h2>
-          {promotions.map((p) => (
-            <article key={p.id} id={p.slug} className="flex scroll-mt-28 flex-col gap-4">
-              <div className="max-w-xl">
-                <PromotionCard promotion={p} showCountdown />
-              </div>
-              {p.products.length > 0 ? (
-                <ProductGrid>
-                  {p.products.map((prod) => (
-                    <ProductCard key={prod.id} product={prod} />
-                  ))}
-                </ProductGrid>
-              ) : (
-                <p className="text-sm text-ink-soft">ยังไม่มีสินค้าที่ร่วมรายการ</p>
-              )}
-            </article>
-          ))}
-        </section>
-      )}
+      <section aria-labelledby="promo-heading" className="flex flex-col gap-8">
+        <h2 id="promo-heading" className="font-display text-2xl font-bold md:text-3xl">
+          โปรโมชั่น
+        </h2>
+        {/* TC-DEA-01: section ① stays visible and says so when only sale items exist */}
+        {promotions.length === 0 && (
+          <p className="rounded-card border border-dashed border-line p-6 text-center text-ink-soft">
+            ยังไม่มีโปรโมชั่นในขณะนี้
+          </p>
+        )}
+        {promotions.map((p) => (
+          <article key={p.id} id={p.slug} className="flex scroll-mt-28 flex-col gap-4">
+            <div className="max-w-xl">
+              <PromotionCard promotion={p} showCountdown />
+            </div>
+            {p.products.length > 0 ? (
+              <ProductGrid>
+                {p.products.map((prod) => (
+                  <ProductCard key={prod.id} product={prod} />
+                ))}
+              </ProductGrid>
+            ) : (
+              <p className="text-sm text-ink-soft">ยังไม่มีสินค้าที่ร่วมรายการ</p>
+            )}
+          </article>
+        ))}
+      </section>
 
       {discounted.length > 0 && (
         <section aria-labelledby="sale-heading" className="flex flex-col gap-4">

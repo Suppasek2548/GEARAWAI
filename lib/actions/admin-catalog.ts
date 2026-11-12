@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   adminError,
   adminOrDenied,
+  duplicateFieldError,
   PATHS,
   revalidateStorefront,
   UUID_RE,
@@ -183,7 +184,12 @@ export async function saveProductAction(id: string | null, _p: FormState, fd: Fo
   if (id) {
     // stock_quantity is NOT updatable here — the DB has no UPDATE grant on it; use the Stock menu (ADMIN §4.2)
     const { error } = await supabase.from("products").update(common).eq("id", id);
-    if (error) return { status: "error", message: adminError(error), values: raw };
+    if (error) {
+      const fieldErrors = duplicateFieldError(error);
+      return fieldErrors
+        ? { status: "error", fieldErrors, values: raw }
+        : { status: "error", message: adminError(error), values: raw };
+    }
     revalidateStorefront(...PATHS.catalog);
     return { status: "success", message: "บันทึกสินค้าแล้ว", redirect: "/admin/products" };
   }
@@ -196,8 +202,11 @@ export async function saveProductAction(id: string | null, _p: FormState, fd: Fo
     .insert({ ...common, stock_quantity: initial }) // trigger writes stock_movements('initial')
     .select("id")
     .single();
-  if (error || !data)
+  if (error || !data) {
+    const fieldErrors = duplicateFieldError(error);
+    if (fieldErrors) return { status: "error", fieldErrors, values: raw };
     return { status: "error", message: error ? adminError(error) : "บันทึกไม่สำเร็จ", values: raw };
+  }
   revalidateStorefront(...PATHS.catalog);
   // Next: add pictures on the edit page
   return {

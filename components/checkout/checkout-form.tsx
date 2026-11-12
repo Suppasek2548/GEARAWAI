@@ -9,6 +9,7 @@ import { formatTHB } from "@/lib/utils/format";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Textarea } from "@/components/ui/field";
 import { ProductImage } from "@/components/products/product-image";
+import { useFocusFirstError } from "@/hooks/use-focus-first-error";
 
 type Props = {
   lines: CartLine[];
@@ -30,6 +31,7 @@ export function CheckoutForm({ lines, subtotal, shipping, profile }: Props) {
   const [address, setAddress] = useState(state.values?.shippingAddress ?? profile.address ?? "");
   const fe = state.fieldErrors ?? {};
   const v = state.values;
+  const formRef = useFocusFirstError(state);
 
   const shippingFee = subtotal >= shipping.freeMin ? 0 : shipping.flatFee; // D-04: before coupon
   const discount = coupon?.discount ?? 0;
@@ -49,7 +51,12 @@ export function CheckoutForm({ lines, subtotal, shipping, profile }: Props) {
     });
 
   return (
-    <form action={action} noValidate className="grid items-start gap-6 lg:grid-cols-[1fr_400px]">
+    <form
+      ref={formRef}
+      action={action}
+      noValidate
+      className="grid items-start gap-6 lg:grid-cols-[1fr_400px]"
+    >
       <section
         aria-labelledby="ship-heading"
         className="flex flex-col gap-4 rounded-card border border-line bg-surface p-6"

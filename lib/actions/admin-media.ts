@@ -119,6 +119,42 @@ export async function updateMediaAction(
   return { ok: true, message: "บันทึกข้อมูลภาพแล้ว" };
 }
 
+const USAGE_LABEL: Record<string, string> = {
+  product_images: "สินค้า",
+  categories: "หมวดหมู่",
+  brands: "แบรนด์",
+  promotions: "โปรโมชั่น",
+  services: "บริการ",
+  rewards: "ของรางวัล",
+  team_members: "ทีมงาน",
+  site_settings: "การตั้งค่า",
+};
+
+/** media_usage() rows → readable "หมวด: ชื่อ" labels (ids of products/rewards/team are resolved to names). */
+async function describeUsage(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  usage: { source: string; ref: string }[],
+): Promise<string[]> {
+  const ids = (source: string) => usage.filter((u) => u.source === source).map((u) => u.ref);
+  const [products, rewards, team] = await Promise.all([
+    ids("product_images").length
+      ? supabase.from("products").select("id, name, sku").in("id", ids("product_images"))
+      : Promise.resolve({ data: [] as { id: string; name: string; sku: string }[] }),
+    ids("rewards").length
+      ? supabase.from("rewards").select("id, name").in("id", ids("rewards"))
+      : Promise.resolve({ data: [] as { id: string; name: string }[] }),
+    ids("team_members").length
+      ? supabase.from("team_members").select("id, full_name").in("id", ids("team_members"))
+      : Promise.resolve({ data: [] as { id: string; full_name: string }[] }),
+  ]);
+  const names = new Map<string, string>([
+    ...(products.data ?? []).map((p) => [p.id, `${p.name} (${p.sku})`] as [string, string]),
+    ...(rewards.data ?? []).map((r) => [r.id, r.name] as [string, string]),
+    ...(team.data ?? []).map((t) => [t.id, t.full_name] as [string, string]),
+  ]);
+  return [...new Set(usage.map((u) => `${USAGE_LABEL[u.source] ?? u.source}: ${names.get(u.ref) ?? u.ref}`))];
+}
+
 /** S16-F06 / R-28 — refuse to delete an image that is still used anywhere. */
 export async function deleteMediaAction(id: string): Promise<AdminResult & { usage?: string[] }> {
   const { denied } = await adminOrDenied();
@@ -128,7 +164,7 @@ export async function deleteMediaAction(id: string): Promise<AdminResult & { usa
   const { data: usage, error: uErr } = await supabase.rpc("media_usage", { p_media_id: id });
   if (uErr) return { ok: false, message: adminError(uErr) };
   if (usage && usage.length) {
-    const where = usage.map((u) => `${u.source}: ${u.ref}`);
+    const where = await describeUsage(supabase, usage);
     return { ok: false, message: `ลบไม่ได้ — ภาพนี้ยังถูกใช้อยู่ที่ ${where.join(", ")}`, usage: where };
   }
   const { data: m } = await supabase.from("media_files").select("bucket, storage_path").eq("id", id).single();
