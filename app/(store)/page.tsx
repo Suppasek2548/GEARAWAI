@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { cn } from "@/lib/utils/cn";
 import {
   ArrowRight,
   BadgeCheck,
@@ -75,13 +76,25 @@ async function HeroFromSettings() {
 function Hero({ info = DEFAULT_INFO, banner }: { info?: StoreInfo; banner?: HeroBanner }) {
   const ctaHref = banner?.cta_href?.startsWith("/") ? banner.cta_href : "/shop";
   return (
-    <section className="relative overflow-hidden bg-brand-gradient">
+    // With a hero image: show it at full colour on the plain canvas (no brand-gradient wash).
+    // Without one: brand gradient + soft lime glow, as before.
+    <section
+      className={cn("relative overflow-hidden", banner?.desktop_url ? "bg-canvas" : "bg-brand-gradient")}
+    >
       {banner?.desktop_url ? (
-        <picture className="absolute inset-0">
-          {banner.mobile_url && <source media="(max-width: 767px)" srcSet={banner.mobile_url} />}
-          {banner.tablet_url && <source media="(max-width: 1023px)" srcSet={banner.tablet_url} />}
-          <img src={banner.desktop_url} alt="" className="size-full object-cover opacity-50" />
-        </picture>
+        <>
+          <picture className="absolute inset-0">
+            {banner.mobile_url && <source media="(max-width: 767px)" srcSet={banner.mobile_url} />}
+            {banner.tablet_url && <source media="(max-width: 1023px)" srcSet={banner.tablet_url} />}
+            <img src={banner.desktop_url} alt="" className="size-full object-cover" />
+          </picture>
+          {/* Readability shade under the text on smaller screens only (desktop keeps the full-colour image):
+              phone = even dark veil behind the centred text · tablet = dark on the left where the text sits */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-canvas/60 md:bg-transparent md:bg-linear-to-r md:from-canvas/85 md:via-canvas/55 md:to-transparent lg:hidden"
+          />
+        </>
       ) : (
         <div
           aria-hidden

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cn } from "@/lib/utils/cn";
 import { CalendarClock, Megaphone } from "lucide-react";
 import type { ActivePromotion } from "@/lib/data/catalog";
 import { formatTHB, formatThaiDate } from "@/lib/utils/format";
@@ -21,15 +22,31 @@ export function PromotionCard({
   return (
     <Link
       href={`/deals#${promotion.slug}`}
-      className="group relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-card border border-brand-secondary/60 bg-brand-gradient p-6 transition-all hover:-translate-y-1 hover:shadow-glow"
+      className={cn(
+        "group relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-card border border-brand-secondary/60 bg-brand-gradient p-6 transition-all hover:-translate-y-1 hover:shadow-glow",
+        // desktop (≥1024px): banner at full colour on the plain canvas — no brand-gradient wash
+        promotion.bannerDesktopUrl && "lg:bg-canvas lg:bg-none",
+      )}
     >
       {promotion.bannerDesktopUrl && (
-        <picture className="absolute inset-0">
-          {promotion.bannerMobileUrl && (
-            <source media="(max-width: 767px)" srcSet={promotion.bannerMobileUrl} />
-          )}
-          <img src={promotion.bannerDesktopUrl} alt="" className="size-full object-cover opacity-60" />
-        </picture>
+        <>
+          <picture className="absolute inset-0">
+            {promotion.bannerMobileUrl && (
+              <source media="(max-width: 767px)" srcSet={promotion.bannerMobileUrl} />
+            )}
+            {/* tablet/phone keep the 60% banner over the gradient; desktop shows it at full colour */}
+            <img
+              src={promotion.bannerDesktopUrl}
+              alt=""
+              className="size-full object-cover opacity-60 lg:opacity-100"
+            />
+          </picture>
+          {/* readability shade (all sizes): dark from the bottom, where the name/description/date sit */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-linear-to-t from-canvas/90 via-canvas/45 to-transparent"
+          />
+        </>
       )}
       <div className="relative flex items-start justify-between gap-3">
         <Megaphone className="size-8 text-brand-lime" aria-hidden />
