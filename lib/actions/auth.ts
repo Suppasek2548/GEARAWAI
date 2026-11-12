@@ -1,9 +1,10 @@
 "use server";
 
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { hasRecoverySession, RECOVERY_COOKIE } from "@/lib/auth/recovery";
+import { resolveSiteUrl } from "@/lib/auth/site-url";
 import {
   fieldErrors,
   forgotPasswordSchema,
@@ -123,6 +124,8 @@ const RESET_SENT =
 /**
  * Login-page modal → Supabase `resetPasswordForEmail()`. The e-mail link returns to /auth/callback,
  * which exchanges the PKCE code (verifier cookie written here, so open the link in this same browser).
+ * The link's base URL comes only from resolveSiteUrl() (D-25) — never from the request's Host headers.
+ * When it refuses (Preview, missing or disallowed URL) no e-mail is sent at all.
  */
 export async function requestPasswordResetAction(rawEmail: string): Promise<ForgotPasswordResult> {
   const parsed = forgotPasswordSchema.safeParse({ email: rawEmail });
@@ -130,11 +133,19 @@ export async function requestPasswordResetAction(rawEmail: string): Promise<Forg
     return { ok: false, field: "email", message: parsed.error.issues[0]?.message ?? "รูปแบบอีเมลไม่ถูกต้อง" };
   }
 
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host");
-  const proto = h.get("x-forwarded-proto") ?? (host?.startsWith("localhost") ? "http" : "https");
-  if (!host) return { ok: false, message: GENERIC_ERROR };
-  const redirectTo = `${proto}://${host}/auth/callback?next=/reset-password`;
+  const site = resolveSiteUrl(process.env);
+  if (!site.ok) {
+    // reason code only — never the e-mail address
+    console.error(`[forgot-password] reset e-mail not sent: ${site.reason}`);
+    return {
+      ok: false,
+      message:
+        site.reason === "PREVIEW_DISABLED"
+          ? "การรีเซ็ตรหัสผ่านปิดใช้งานในเวอร์ชันทดสอบนี้"
+          : "ระบบรีเซ็ตรหัสผ่านยังไม่พร้อมใช้งาน กรุณาติดต่อร้าน",
+    };
+  }
+  const redirectTo = `${site.url}/auth/callback?next=/reset-password`;
 
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, { redirectTo });
