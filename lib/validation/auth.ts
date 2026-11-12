@@ -51,6 +51,20 @@ export const loginSchema = z.object({
   password: z.string().min(1, "กรุณากรอกรหัสผ่าน"),
 });
 
+/** Forgot password — only the e-mail is collected (in the Login page modal). */
+export const forgotPasswordSchema = z.object({ email });
+
+/** New password after following the reset link — same strength rule as registration. */
+export const resetPasswordSchema = z
+  .object({
+    password: passwordRule,
+    confirmPassword: z.string().min(1, "กรุณายืนยันรหัสผ่าน"),
+  })
+  .refine((d) => d.password === d.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "รหัสผ่านไม่ตรงกัน",
+  });
+
 export type FieldErrors = Partial<Record<string, string>>;
 
 export function fieldErrors(error: z.ZodError): FieldErrors {

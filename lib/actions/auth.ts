@@ -1,8 +1,17 @@
 "use server";
 
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { fieldErrors, loginSchema, registerSchema, type FieldErrors } from "@/lib/validation/auth";
+import { hasRecoverySession, RECOVERY_COOKIE } from "@/lib/auth/recovery";
+import {
+  fieldErrors,
+  forgotPasswordSchema,
+  loginSchema,
+  registerSchema,
+  resetPasswordSchema,
+  type FieldErrors,
+} from "@/lib/validation/auth";
 import { safeRedirectPath } from "@/lib/utils/redirect";
 import { GENERIC_ERROR } from "@/lib/errors";
 
@@ -98,4 +107,78 @@ export async function logoutAction() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/");
+}
+
+/* ------------------------------------------------------------------ */
+/* Forgot / reset password (Supabase Auth only — no password storage)   */
+/* ------------------------------------------------------------------ */
+
+export type ForgotPasswordResult =
+  { ok: true; message: string } | { ok: false; message: string; field?: string };
+
+/** Same answer whether or not an account exists, so the form cannot be used to probe e-mails. */
+const RESET_SENT =
+  "ถ้ามีบัญชีที่ใช้อีเมลนี้ ระบบได้ส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ไปแล้ว กรุณาตรวจกล่องจดหมาย (รวมถึงโฟลเดอร์สแปม) ลิงก์ใช้ได้ครั้งเดียวและมีอายุจำกัด";
+
+/**
+ * Login-page modal → Supabase `resetPasswordForEmail()`. The e-mail link returns to /auth/callback,
+ * which exchanges the PKCE code (verifier cookie written here, so open the link in this same browser).
+ */
+export async function requestPasswordResetAction(rawEmail: string): Promise<ForgotPasswordResult> {
+  const parsed = forgotPasswordSchema.safeParse({ email: rawEmail });
+  if (!parsed.success) {
+    return { ok: false, field: "email", message: parsed.error.issues[0]?.message ?? "รูปแบบอีเมลไม่ถูกต้อง" };
+  }
+
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  const proto = h.get("x-forwarded-proto") ?? (host?.startsWith("localhost") ? "http" : "https");
+  if (!host) return { ok: false, message: GENERIC_ERROR };
+  const redirectTo = `${proto}://${host}/auth/callback?next=/reset-password`;
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, { redirectTo });
+  if (error) {
+    if (error.status === 429 || /rate limit/i.test(error.message)) {
+      return { ok: false, message: "ส่งคำขอบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่" };
+    }
+    return { ok: false, message: "ส่งอีเมลไม่สำเร็จในขณะนี้ กรุณาลองใหม่ภายหลัง" };
+  }
+  return { ok: true, message: RESET_SENT };
+}
+
+/**
+ * /reset-password → Supabase `updateUser({ password })`, allowed only with a recovery session
+ * (see lib/auth/recovery.ts). Afterwards the recovery session is closed and the user logs in again.
+ */
+export async function updatePasswordAction(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
+  const raw = {
+    password: String(formData.get("password") ?? ""),
+    confirmPassword: String(formData.get("confirmPassword") ?? ""),
+  };
+  const parsed = resetPasswordSchema.safeParse(raw);
+  if (!parsed.success) return { fieldErrors: fieldErrors(parsed.error) };
+
+  if (!(await hasRecoverySession())) {
+    return { error: "ลิงก์ตั้งรหัสผ่านหมดอายุหรือไม่ถูกต้อง กรุณาขอลิงก์ใหม่จากหน้าเข้าสู่ระบบ" };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
+  if (error) {
+    if (error.code === "same_password" || /different from the old/i.test(error.message)) {
+      return { fieldErrors: { password: "รหัสผ่านใหม่ต้องไม่ซ้ำกับรหัสผ่านเดิม" } };
+    }
+    if (error.code === "weak_password") {
+      return { fieldErrors: { password: "รหัสผ่านไม่ผ่านเงื่อนไขความปลอดภัย กรุณาตั้งใหม่" } };
+    }
+    if (error.status === 401 || error.code === "session_not_found" || error.code === "session_expired") {
+      return { error: "ลิงก์ตั้งรหัสผ่านหมดอายุหรือไม่ถูกต้อง กรุณาขอลิงก์ใหม่จากหน้าเข้าสู่ระบบ" };
+    }
+    return { error: GENERIC_ERROR };
+  }
+
+  (await cookies()).delete(RECOVERY_COOKIE);
+  await supabase.auth.signOut({ scope: "local" });
+  redirect("/login?reset=success");
 }
