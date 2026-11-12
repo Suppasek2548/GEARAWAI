@@ -10,6 +10,7 @@ import { submitPaymentAction } from "@/lib/actions/checkout";
 import { formatTHB } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
 import { Button } from "@/components/ui/button";
+import { CopyButton } from "@/components/shared/copy-button";
 import { DemoQr } from "./demo-qr";
 
 type Method = "promptpay_demo" | "bank_transfer_demo";
@@ -42,6 +43,7 @@ export function PaymentForm({
 }) {
   const router = useRouter();
   const [method, setMethod] = useState<Method>("promptpay_demo");
+  const accountDigits = bank.account_no.replace(/\D/g, ""); // e.g. "123-4-56789-0" → "1234567890"
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [note, setNote] = useState("");
@@ -150,8 +152,12 @@ export function PaymentForm({
             <dd>{bank.bank}</dd>
             <dt className="text-ink-soft">ชื่อบัญชี</dt>
             <dd>{bank.account_name}</dd>
-            <dt className="text-ink-soft">เลขที่บัญชี</dt>
-            <dd className="font-mono">{bank.account_no}</dd>
+            <dt className="self-center text-ink-soft">เลขที่บัญชี</dt>
+            <dd className="flex flex-wrap items-center justify-between gap-2">
+              <span className="font-mono">{bank.account_no}</span>
+              {/* copies digits only (no spaces/dashes) from the configured account; hidden for sample "XXX-…" */}
+              {accountDigits && <CopyButton value={accountDigits} label="เลขบัญชี" />}
+            </dd>
             {live ? (
               <dd className="col-span-2 mt-1 text-ink-soft">โอนแล้วกรุณาแนบสลิปด้านล่างเพื่อให้ร้านตรวจสอบ</dd>
             ) : (
