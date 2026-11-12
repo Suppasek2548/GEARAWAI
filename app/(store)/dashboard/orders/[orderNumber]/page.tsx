@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { getMyOrderByNumber, type OrderStatus, type PaymentStatus } from "@/lib/data/member";
 import { getCurrentUser } from "@/lib/auth/dal";
+import { getPublicSettings } from "@/lib/data/site";
 import { formatTHB, formatThaiDateTime } from "@/lib/utils/format";
 import { OrderStatusBadge, PaymentStatusBadge } from "@/components/orders/status-badge";
 import { OrderTimeline } from "@/components/orders/order-timeline";
@@ -14,7 +15,7 @@ import { Skeleton } from "@/components/ui/misc";
 
 export const metadata: Metadata = { title: "Order Detail" };
 
-const METHOD = { promptpay_demo: "PromptPay (Demo)", bank_transfer_demo: "โอนผ่านธนาคาร (Demo)" } as const;
+const METHOD = { promptpay_demo: "PromptPay", bank_transfer_demo: "โอนผ่านธนาคาร" } as const;
 
 /** S14-F04 + S14-F10 — order detail, timeline, payments; pay / cancel while pending_payment. */
 export default function OrderDetailPage({ params }: PageProps<"/dashboard/orders/[orderNumber]">) {
@@ -29,7 +30,12 @@ export default function OrderDetailPage({ params }: PageProps<"/dashboard/orders
 
 async function OrderDetail({ params }: { params: PageProps<"/dashboard/orders/[orderNumber]">["params"] }) {
   const { orderNumber } = await params;
-  const [order, user] = await Promise.all([getMyOrderByNumber(orderNumber), getCurrentUser()]);
+  const [order, user, { payment_mode }] = await Promise.all([
+    getMyOrderByNumber(orderNumber),
+    getCurrentUser(),
+    getPublicSettings(),
+  ]);
+  const demo = payment_mode.mode !== "live" ? " (Demo)" : ""; // D-22
   // Admins can read every order through RLS, but this page is the member's own view
   if (!order || !user || order.user_id !== user.id) notFound();
   const status = order.status as OrderStatus;
@@ -134,7 +140,7 @@ async function OrderDetail({ params }: { params: PageProps<"/dashboard/orders/[o
             )}
           </section>
           <section className="rounded-card border border-line bg-surface p-5 text-sm">
-            <h2 className="mb-2 font-display text-lg font-semibold">การแจ้งชำระเงิน (Demo)</h2>
+            <h2 className="mb-2 font-display text-lg font-semibold">การแจ้งชำระเงิน{demo}</h2>
             {payments.length ? (
               <ul className="flex flex-col gap-3">
                 {payments.map((p) => (
@@ -143,7 +149,10 @@ async function OrderDetail({ params }: { params: PageProps<"/dashboard/orders/[o
                     className="flex flex-col gap-1 border-b border-line pb-3 last:border-0 last:pb-0"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span>{METHOD[p.method as keyof typeof METHOD]}</span>
+                      <span>
+                        {METHOD[p.method as keyof typeof METHOD]}
+                        {demo}
+                      </span>
                       <PaymentStatusBadge status={p.status as PaymentStatus} />
                     </div>
                     <span className="text-ink-muted">

@@ -5,7 +5,8 @@ import { getMyCart, getMyProfileForForms } from "@/lib/data/member";
 import { getPublicSettings } from "@/lib/data/site";
 import { CheckoutForm } from "@/components/checkout/checkout-form";
 import { CheckoutStepper } from "@/components/checkout/stepper";
-import { DemoBanner, Skeleton } from "@/components/ui/misc";
+import { Skeleton } from "@/components/ui/misc";
+import { PaymentDemoBanner } from "@/components/checkout/payment-demo-banner";
 
 export const metadata: Metadata = { title: "Checkout" };
 
@@ -13,7 +14,7 @@ export const metadata: Metadata = { title: "Checkout" };
 export default function CheckoutPage() {
   return (
     <>
-      <DemoBanner />
+      <PaymentDemoBanner />
       <div className="container-page flex flex-col gap-6 py-8 md:py-10">
         <h1 className="font-display text-3xl font-bold">Checkout</h1>
         <CheckoutStepper current={1} />

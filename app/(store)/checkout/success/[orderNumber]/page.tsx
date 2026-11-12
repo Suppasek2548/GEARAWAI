@@ -3,10 +3,12 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Clock } from "lucide-react";
 import { getMyOrderByNumber, type OrderStatus } from "@/lib/data/member";
+import { getPublicSettings } from "@/lib/data/site";
 import { CheckoutStepper } from "@/components/checkout/stepper";
 import { OrderStatusBadge } from "@/components/orders/status-badge";
 import { ButtonLink } from "@/components/ui/button";
-import { DemoBanner, Skeleton } from "@/components/ui/misc";
+import { Skeleton } from "@/components/ui/misc";
+import { PaymentDemoBanner } from "@/components/checkout/payment-demo-banner";
 
 export const metadata: Metadata = { title: "ส่งข้อมูลแจ้งชำระแล้ว" };
 
@@ -14,7 +16,7 @@ export const metadata: Metadata = { title: "ส่งข้อมูลแจ้
 export default function SuccessPage({ params }: PageProps<"/checkout/success/[orderNumber]">) {
   return (
     <>
-      <DemoBanner />
+      <PaymentDemoBanner />
       <div className="container-page flex flex-col gap-6 py-8 md:py-10">
         <CheckoutStepper current={3} />
         <Suspense fallback={<Skeleton className="h-64" />}>
@@ -31,7 +33,7 @@ async function SuccessContent({
   params: PageProps<"/checkout/success/[orderNumber]">["params"];
 }) {
   const { orderNumber } = await params;
-  const order = await getMyOrderByNumber(orderNumber);
+  const [order, { payment_mode }] = await Promise.all([getMyOrderByNumber(orderNumber), getPublicSettings()]);
   if (!order) notFound();
   return (
     <section className="mx-auto flex max-w-xl flex-col items-center gap-4 rounded-card border border-line bg-surface p-8 text-center">
@@ -41,7 +43,9 @@ async function SuccessContent({
         เลขที่คำสั่งซื้อ <span className="font-mono font-semibold text-ink">{order.order_number}</span>
       </p>
       <OrderStatusBadge status={order.status as OrderStatus} />
-      <p className="text-sm text-ink-muted">ระบบชำระเงินจำลอง — ไม่มีการตัดเงินจริง</p>
+      {payment_mode.mode !== "live" && (
+        <p className="text-sm text-ink-muted">ระบบชำระเงินจำลอง — ไม่มีการตัดเงินจริง</p>
+      )}
       <div className="mt-2 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
         <ButtonLink href={`/dashboard/orders/${order.order_number}`}>ดูคำสั่งซื้อ</ButtonLink>
         <ButtonLink href="/shop" variant="outline">

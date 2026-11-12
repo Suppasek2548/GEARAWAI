@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Building2, ImageUp, QrCode, X } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
@@ -16,8 +17,11 @@ const MAX_BYTES = 2 * 1024 * 1024; // bucket limit (upload_rule)
 const MIME = ["image/jpeg", "image/png", "image/webp"];
 
 /**
- * S09-F06–F08 (Demo Mode): choose method → sample QR / sample bank account → optional slip → submit_payment().
+ * S09-F06–F08: choose method → QR / bank account → optional slip → submit_payment().
+ * Demo mode shows the generated sample QR and "do not transfer" notes; live mode (D-22, Settings → Payment)
+ * shows the store's uploaded QR and real account without Demo wording. Either way an admin checks the slip.
  * The slip goes to the PRIVATE bucket payment-slips at {user_id}/{order_id}/{uuid}.ext (storage policy + RPC check).
+ * Method values stay `*_demo` — they are the database enum, not shown to customers.
  */
 export function PaymentForm({
   orderId,
@@ -25,12 +29,16 @@ export function PaymentForm({
   userId,
   total,
   bank,
+  live = false,
+  qrImageUrl = null,
 }: {
   orderId: string;
   orderNumber: string;
   userId: string;
   total: number;
   bank: { bank: string; account_name: string; account_no: string };
+  live?: boolean;
+  qrImageUrl?: string | null;
 }) {
   const router = useRouter();
   const [method, setMethod] = useState<Method>("promptpay_demo");
@@ -73,8 +81,8 @@ export function PaymentForm({
     });
 
   const methods: { value: Method; label: string; icon: typeof QrCode }[] = [
-    { value: "promptpay_demo", label: "PromptPay (Demo)", icon: QrCode },
-    { value: "bank_transfer_demo", label: "โอนผ่านธนาคาร (Demo)", icon: Building2 },
+    { value: "promptpay_demo", label: live ? "PromptPay" : "PromptPay (Demo)", icon: QrCode },
+    { value: "bank_transfer_demo", label: live ? "โอนผ่านธนาคาร" : "โอนผ่านธนาคาร (Demo)", icon: Building2 },
   ];
 
   return (
@@ -111,10 +119,30 @@ export function PaymentForm({
         <p className="text-sm text-ink-soft">ยอดที่ต้องชำระ</p>
         <p className="font-display text-3xl font-bold text-brand-lime">{formatTHB(total)}</p>
         {method === "promptpay_demo" ? (
-          <>
-            <DemoQr seed={orderNumber} />
-            <p className="text-sm text-warning">QR ตัวอย่างสำหรับการสาธิตเท่านั้น — สแกนชำระเงินจริงไม่ได้</p>
-          </>
+          qrImageUrl ? (
+            <>
+              {/* Store's own QR from Settings → Payment (Admin label: empty = generated sample QR) */}
+              <Image
+                src={qrImageUrl}
+                alt="QR สำหรับชำระเงิน"
+                width={250}
+                height={250}
+                className="size-[250px] max-w-full rounded-btn bg-white object-contain"
+              />
+              <p className={cn("text-sm", live ? "text-ink-soft" : "text-warning")}>
+                {live
+                  ? "สแกน QR เพื่อชำระเงิน แล้วแนบสลิปด้านล่างเพื่อให้ร้านตรวจสอบ"
+                  : "QR สำหรับการสาธิต — ระบบชำระเงินจำลอง"}
+              </p>
+            </>
+          ) : live ? (
+            <p className="text-sm text-warning">ร้านยังไม่ได้ตั้งค่า QR — กรุณาเลือก &quot;โอนผ่านธนาคาร&quot;</p>
+          ) : (
+            <>
+              <DemoQr seed={orderNumber} />
+              <p className="text-sm text-warning">QR ตัวอย่างสำหรับการสาธิตเท่านั้น — สแกนชำระเงินจริงไม่ได้</p>
+            </>
+          )
         ) : (
           <dl className="grid w-full max-w-sm grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-left text-sm">
             <dt className="text-ink-soft">ธนาคาร</dt>
@@ -123,7 +151,11 @@ export function PaymentForm({
             <dd>{bank.account_name}</dd>
             <dt className="text-ink-soft">เลขที่บัญชี</dt>
             <dd className="font-mono">{bank.account_no}</dd>
-            <dd className="col-span-2 mt-1 text-warning">ข้อมูลบัญชีตัวอย่าง — ห้ามโอนเงินจริง</dd>
+            {live ? (
+              <dd className="col-span-2 mt-1 text-ink-soft">โอนแล้วกรุณาแนบสลิปด้านล่างเพื่อให้ร้านตรวจสอบ</dd>
+            ) : (
+              <dd className="col-span-2 mt-1 text-warning">ข้อมูลบัญชีตัวอย่าง — ห้ามโอนเงินจริง</dd>
+            )}
           </dl>
         )}
       </div>
@@ -181,7 +213,7 @@ export function PaymentForm({
       </div>
 
       <Button size="lg" onClick={submit} loading={pending} className="w-full">
-        ยืนยันการแจ้งชำระ (Demo)
+        {live ? "ยืนยันการแจ้งชำระ" : "ยืนยันการแจ้งชำระ (Demo)"}
       </Button>
     </div>
   );

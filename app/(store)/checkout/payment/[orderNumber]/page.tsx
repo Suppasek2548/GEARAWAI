@@ -9,15 +9,16 @@ import { CheckoutStepper } from "@/components/checkout/stepper";
 import { PaymentForm } from "@/components/checkout/payment-form";
 import { OrderStatusBadge } from "@/components/orders/status-badge";
 import { ButtonLink } from "@/components/ui/button";
-import { DemoBanner, Skeleton } from "@/components/ui/misc";
+import { Skeleton } from "@/components/ui/misc";
+import { PaymentDemoBanner } from "@/components/checkout/payment-demo-banner";
 
-export const metadata: Metadata = { title: "ชำระเงิน (Demo)" };
+export const metadata: Metadata = { title: "ชำระเงิน" };
 
 /** S09 step 2 — owner only (RLS returns nothing for other users → 404). */
 export default function PaymentPage({ params }: PageProps<"/checkout/payment/[orderNumber]">) {
   return (
     <>
-      <DemoBanner />
+      <PaymentDemoBanner />
       <div className="container-page flex flex-col gap-6 py-8 md:py-10">
         <h1 className="font-display text-3xl font-bold">ชำระเงิน</h1>
         <CheckoutStepper current={2} />
@@ -66,6 +67,8 @@ async function PaymentContent({
               userId={user.id}
               total={Number(order.total_amount)}
               bank={settings.payment_mode.bank_sample}
+              live={settings.payment_mode.mode === "live"}
+              qrImageUrl={settings.payment_mode.qr_image_url || null}
             />
           </>
         ) : (

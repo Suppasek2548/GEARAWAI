@@ -276,20 +276,21 @@ export async function savePaymentSettingsAction(_p: FormState, fd: FormData): Pr
       bank: z.string().trim().min(1).max(80),
       account_name: z.string().trim().min(1).max(80),
       account_no: z.string().trim().min(1).max(40),
+      live: z.boolean().optional().default(false),
     })
     .safeParse(raw);
   if (!parsed.success) return { status: "error", fieldErrors: zodErrors(parsed.error), values: raw };
   const d = parsed.data;
-  // mode stays "demo" — there is no live option until a real gateway exists (ADMIN §4.18)
+  // D-22: the owner may switch to "live" — real QR/bank shown, slips still checked by hand (no gateway)
   return writeSettings(
     {
       payment_mode: {
-        mode: "demo",
+        mode: d.live ? "live" : "demo",
         qr_image_url: d.qr_image_url,
         bank_sample: { bank: d.bank, account_name: d.account_name, account_no: d.account_no },
       },
     },
-    ["/checkout"],
+    ["/checkout", "/dashboard/orders"],
   );
 }
 

@@ -173,8 +173,8 @@ async function Content({ searchParams }: { searchParams: PageProps<"/admin/setti
       {tab === "payment" && (
         <>
           <p className="rounded-btn border border-warning/40 bg-warning/10 p-3 text-sm text-warning">
-            โหมดการชำระเงิน: <strong>demo</strong> (ล็อกไว้ — ยังไม่มีตัวเลือก live จนกว่าจะเชื่อม Payment Gateway จริง) ·
-            ห้ามใช้ข้อมูลบัญชีจริง
+            โหมดการชำระเงิน: <strong>{g("payment_mode").mode === "live" ? "live (รับเงินจริง)" : "demo"}</strong>{" "}
+            · ไม่มี Payment Gateway — ลูกค้าโอน/สแกนเอง แล้ว Admin ต้องตรวจสลิปกับบัญชีจริงทุกครั้งก่อนกดยืนยัน (D-22)
           </p>
           <EntityForm
             action={savePaymentSettingsAction}
@@ -182,17 +182,23 @@ async function Content({ searchParams }: { searchParams: PageProps<"/admin/setti
               {
                 qr_image_url: g("payment_mode").qr_image_url as string,
                 ...(g("payment_mode").bank_sample as V),
-              } as Record<string, string>
+                live: g("payment_mode").mode === "live",
+              } as Record<string, string | boolean>
             }
             fields={[
-              { name: "bank", label: "ชื่อธนาคาร (ตัวอย่าง)", type: "text", required: true },
-              { name: "account_name", label: "ชื่อบัญชี (ตัวอย่าง)", type: "text", required: true },
-              { name: "account_no", label: "เลขที่บัญชี (ตัวอย่าง)", type: "text", required: true },
+              { name: "bank", label: "ชื่อธนาคาร", type: "text", required: true },
+              { name: "account_name", label: "ชื่อบัญชี", type: "text", required: true },
+              { name: "account_no", label: "เลขที่บัญชี", type: "text", required: true },
               {
                 name: "qr_image_url",
-                label: "ภาพ QR ตัวอย่าง (ไม่บังคับ — ไม่ใส่ = ใช้ QR จำลองที่ระบบสร้าง)",
+                label: "ภาพ QR ชำระเงิน (ไม่บังคับ — ไม่ใส่ = ใช้ QR จำลองที่ระบบสร้างในโหมด demo)",
                 type: "image",
                 category: "other",
+              },
+              {
+                name: "live",
+                label: "รับชำระเงินจริง — แสดง QR/บัญชีนี้โดยไม่มีคำว่า Demo และซ่อนแถบ “ระบบชำระเงินจำลอง”",
+                type: "checkbox",
               },
             ]}
           />

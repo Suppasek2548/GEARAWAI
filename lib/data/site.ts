@@ -26,7 +26,8 @@ export type AboutContent = { history: string; highlights: string[]; history_imag
 export type PointsRule = { baht_per_point: number };
 export type ShippingRule = { flat_fee: number; free_shipping_min: number };
 export type PaymentMode = {
-  mode: "demo";
+  /** "live" = real QR/bank shown without Demo wording (D-22) */
+  mode: "demo" | "live";
   qr_image_url: string;
   bank_sample: { bank: string; account_name: string; account_no: string };
 };
